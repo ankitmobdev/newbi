@@ -60,7 +60,6 @@ class _SplashScreenState extends State<SplashScreen> {
                   'assets/images/unnamed 1copy 1.png',
                   height: 110,
                   width: 110,
-                  color: Colors.white,
                 ),
 
                 const SizedBox(height: 20),

@@ -66,7 +66,6 @@ class TermOfServiceScreen extends StatelessWidget {
                     'assets/images/unnamed 1copy 1.png',
                     height: 110,
                     width: 110,
-                    color: Colors.white,
                   ),
                 ),
 

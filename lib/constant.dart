@@ -19,7 +19,7 @@ class AppColor {
 
   ///New Design
   static Color primaryColor = Color(0xFFF202126);
-  static Color secondprimaryColor = Color(0xFFF05FFCD);
+  static Color secondprimaryColor = Color(0xFFFFE5900);
   static Color secondaryColor = Color(0xFFFFFFFF);
   static Color borderColor = Color(0xFFE2E2E2);
   static Color textclr = Color(0xFF6F7C8E);

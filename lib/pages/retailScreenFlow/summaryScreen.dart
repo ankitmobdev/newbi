@@ -214,7 +214,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
                 "Total Price: 4660:00",
                 style: GoogleFonts.poppins(
                   fontSize: 20,
-                  color:Color(0Xff05FFCD),
+                  color: AppColor.secondprimaryColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),

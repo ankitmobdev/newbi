@@ -32,6 +32,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
   final TextEditingController stairs1 = TextEditingController();
   final TextEditingController unit2 = TextEditingController();
   final TextEditingController stairs2 = TextEditingController();
+  String? locationAddress;
 
   bool byMe = false;
   bool bySomeoneElse = false;
@@ -43,25 +44,24 @@ class _DetailsScreenState extends State<DetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffF7F7F7),
+      backgroundColor: AppColor.secondaryColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.8,
+        backgroundColor: AppColor.secondaryColor,
+        elevation: 0,
         centerTitle: true,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: SvgPicture.asset("assets/images/back.svg"),
+        leading: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
         ),
         title: Text(
           "Details",
           style: GoogleFonts.poppins(
-            color: Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.w600,
+            color: AppColor.primaryColor,
           ),
         ),
       ),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
         child: Column(
@@ -71,23 +71,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             // ---------------- PICKUP LOCATION ----------------
             label("Pickup Location"),
             SizedBox(height: 5),
-            InkWell(
-              onTap: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => SelectLocationScreen(),
-                  ),
-                );
-
-                if (result != null) {
-                  setState(() {
-                    pickupLocation.text = result["address"];
-                  });
-                }
-              },
-              child: boxField("Location", pickupLocation),
-            ),
+            boxField("Location", pickupLocation),
 
             const SizedBox(height: 16),
 
@@ -107,23 +91,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             // ---------------- DROP OFF LOCATION ----------------
             label("Drop Off Location"),
             SizedBox(height: 5),
-            InkWell(
-              onTap: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => SelectLocationScreen(),
-                  ),
-                );
-
-                if (result != null) {
-                  setState(() {
-                    dropLocation.text = result["address"];
-                  });
-                }
-              },
-              child: boxField("Location", dropLocation),
-            ),
+            boxField("Location", dropLocation),
 
             const SizedBox(height: 16),
 
@@ -432,37 +400,73 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
   // ---------------- TEXT FIELD ----------------
   Widget boxField(String hint, TextEditingController controller) {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 5,
-            offset: const Offset(1, 3),
-          )
-        ],
-      ),
-      child: TextField(
-        controller: controller,
-        style: GoogleFonts.poppins(
-          color: AppColor.primaryColor,
-          fontSize: 15,
-        ),
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 15),
-          hintText: hint,
-          border: InputBorder.none,
-          hintStyle: GoogleFonts.poppins(
-            color: AppColor.textclr,
-            fontSize: 14,
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () {
+        if (controller == pickupLocation) {
+          // OPEN MAP SCREEN FROM HERE
+          Helper.moveToScreenwithPush(
+            context,
+            LocationWidget(
+              callback: (String location, double latitude, double longitude) {
+                setState(() {
+                  pickupLocation.text = location;
+                });
+              },
+            ),
+          );
+        }
+        else if(controller == dropLocation){
+          Helper.moveToScreenwithPush(
+            context,
+            LocationWidget(
+              callback: (String location, double latitude, double longitude) {
+                setState(() {
+                  dropLocation.text = location;
+                });
+              },
+            ),
+          );
+        }
+      },
+
+      child: AbsorbPointer( // prevents keyboard + allows tap
+        child: Container(
+          height: 50,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 5,
+                offset: Offset(1, 3),
+              )
+            ],
+          ),
+          child: TextField(
+            readOnly: controller==pickupLocation||controller==dropLocation,  // 🔥 Always keep readOnly
+            controller: controller,
+            style: GoogleFonts.poppins(
+              color: AppColor.primaryColor,
+              fontSize: 15,
+            ),
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.symmetric(horizontal: 15),
+              hintText: hint,
+              border: InputBorder.none,
+              hintStyle: GoogleFonts.poppins(
+                color: AppColor.textclr,
+                fontSize: 14,
+              ),
+            ),
           ),
         ),
       ),
     );
   }
+
+
 
   // ---------------- CHECKBOX ----------------
   Widget checkBox(bool value, Function(bool?) onChanged) {
