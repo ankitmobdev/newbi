@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constant.dart';
+import 'loginUser.dart';
 
 class SignupUser extends StatefulWidget {
   const SignupUser({super.key});
@@ -181,23 +182,28 @@ class _SignupUserState extends State<SignupUser> {
 
                   const SizedBox(height: 20),
 
-                  Text.rich(
-                    TextSpan(
-                      text: "I have already an account? ",
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 14,
+                  InkWell(
+                    onTap: () {
+                      Helper.moveToScreenwithPush(context, LoginUser(loginas: 'user',));
+                    },
+                    child: Text.rich(
+                      TextSpan(
+                        text: "I have already an account? ",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: "Login",
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          )
+                        ],
                       ),
-                      children: [
-                        TextSpan(
-                          text: "Login",
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        )
-                      ],
                     ),
                   ),
 

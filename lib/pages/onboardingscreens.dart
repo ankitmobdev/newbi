@@ -49,14 +49,19 @@ class OnboardingScreen extends StatelessWidget {
                 // Login as User Button
                 InkWell(
                   onTap: () {
-                    Helper.moveToScreenwithPush(context, LoginUser());
+                    Helper.moveToScreenwithPush(context, LoginUser(loginas: 'user',));
                   },
                     child: _buildButton("Login as User")),
 
                 const SizedBox(height: 16),
 
                 // Login as Driver Button
-                _buildButton("Login as Driver"),
+                InkWell(
+                    onTap: () {
+                      Helper.moveToScreenwithPush(context, LoginUser(loginas: 'driver',));
+                    },
+
+                    child: _buildButton("Login as Driver")),
 
                 const SizedBox(height: 50),
               ],

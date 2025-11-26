@@ -236,8 +236,8 @@ class LocationWidgetUI extends State<LocationWidget> {
           ),
 
           // ************* MAP PIN ICON *************
-          const Center(
-            child: Icon(Icons.location_on, size: 50, color: Colors.red),
+           Center(
+            child: Image.asset( "assets/images/mapIcon.png",),
           ),
 
           // ************* BOTTOM BUTTON *************

@@ -4,10 +4,12 @@ import 'package:go_eat_e_commerce_app/pages/registrationScreen/signupScreenUser.
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../constant.dart';
+import '../driver/registration/signupDriver.dart';
 import '../homeScreen/homeScreen.dart';
 
 class LoginUser extends StatefulWidget {
-  const LoginUser({super.key});
+  final loginas;
+  const LoginUser({super.key,this.loginas});
 
   @override
   State<LoginUser> createState() => _LoginUserState();
@@ -170,6 +172,8 @@ class _LoginUserState extends State<LoginUser> {
                 // Bottom Text
                 InkWell(
                   onTap: () {
+                    widget.loginas=="driver"?
+                    Helper.moveToScreenwithPush(context, DriverSignupScreen()):
                     Helper.moveToScreenwithPush(context, SignupUser());
                   },
                   child: Text.rich(
