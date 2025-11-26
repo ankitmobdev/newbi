@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "642501298568",
+    "project_id": "goeat-dbbb7",
+    "storage_bucket": "goeat-dbbb7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:642501298568:android:4d1937725ff4876ca5523d",
+        "android_client_info": {
+          "package_name": "com.app.goeatdrivercommerceapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOJDqboRSU5oaSNL4NKK0LLEWwj2UYkm0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:642501298568:android:c4209ca1e0bf6a79a5523d",
+        "android_client_info": {
+          "package_name": "com.app.goeatecommerceapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOJDqboRSU5oaSNL4NKK0LLEWwj2UYkm0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:642501298568:android:32c0a9b23015a764a5523d",
+        "android_client_info": {
+          "package_name": "com.apptech.goeatvendor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOJDqboRSU5oaSNL4NKK0LLEWwj2UYkm0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

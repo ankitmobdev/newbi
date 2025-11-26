@@ -1,0 +1,177 @@
+import 'package:flutter/material.dart';
+import 'package:go_eat_e_commerce_app/constant.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import 'addItemMovingScreen1.dart';
+
+class ApplianceDetailsScreen extends StatefulWidget {
+  const ApplianceDetailsScreen({super.key});
+
+  @override
+  State<ApplianceDetailsScreen> createState() => _ApplianceDetailsScreenState();
+}
+
+class _ApplianceDetailsScreenState extends State<ApplianceDetailsScreen> {
+  bool yes = false;
+  bool no = false;
+
+  int selectedIndex = -1;
+
+  final List<Map<String, dynamic>> applianceList = [
+    {"name": "Dishwasher", "price": 12},
+    {"name": "Refrigerator", "price": 14},
+    {"name": "Washer", "price": 16},
+    {"name": "Dryer", "price": 18},
+    {"name": "Oven", "price": 12},
+    {"name": "Other", "price": 13},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0.8,
+        centerTitle: true,
+        leading: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.black),
+        ),
+        title: Text(
+          "Details",
+          style: GoogleFonts.poppins(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: AppColor.primaryColor,
+          ),
+        ),
+      ),
+
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+
+            // TITLE
+            Text(
+              "I have appliance large to move:",
+              style: GoogleFonts.poppins(
+                fontSize: 14,fontWeight: FontWeight.w400,
+                color: AppColor.primaryColor,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // YES / NO ROW
+            Row(
+              children: [
+                checkBox(yes, (v) {
+                  setState(() {
+                    yes = v!;
+                    if (yes) no = false;
+                  });
+                }),
+                Text("Yes", style: GoogleFonts.poppins(fontSize: 14)),
+                const SizedBox(width: 20),
+                checkBox(no, (v) {
+                  setState(() {
+                    no = v!;
+                    if (no) yes = false;
+                  });
+                }),
+                Text("NO", style: GoogleFonts.poppins(fontSize: 14)),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            // ---------------- APPLIANCE LIST ----------------
+            Expanded(
+              child: ListView.builder(
+                itemCount: applianceList.length,
+                itemBuilder: (context, index) {
+                  final item = applianceList[index];
+                  return Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          setState(() => selectedIndex = index);
+                          Helper.moveToScreenwithPush(context, AddItemsSummaryMovingScreen());
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 4),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                  color: Colors.grey.shade300, width: 1),
+                            ),
+                            color: Colors.white,
+                          ),
+                          child: Row(
+                            children: [
+                              // RADIO BUTTON
+                              Icon(
+                                selectedIndex == index
+                                    ? Icons.radio_button_checked
+                                    : Icons.radio_button_off,
+                                color: selectedIndex == index
+                                    ? Colors.black
+                                    : AppColor.borderColor,
+                                size: 22,
+                              ),
+                              const SizedBox(width: 10),
+
+                              // APPLIANCE NAME
+                              Expanded(
+                                child: Text(
+                                  item["name"],
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,fontWeight: FontWeight.w400,
+                                    color:  AppColor.primaryColor,
+                                  ),
+                                ),
+                              ),
+
+                              // PRICE
+                              Text(
+                                "\$${item["price"]}",
+                                style: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColor.secondprimaryColor, // green
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+
+
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------- CHECKBOX (YES/NO STYLE) ----------
+  Widget checkBox(bool value, Function(bool?) onChanged) {
+    return Checkbox(
+      value: value,
+      onChanged: onChanged,
+      activeColor: AppColor.primaryColor,
+      side:  BorderSide(color: AppColor.borderColor, width: 1.2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+    );
+  }
+}
