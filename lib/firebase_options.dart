@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '642501298568',
     projectId: 'goeat-dbbb7',
     storageBucket: 'goeat-dbbb7.firebasestorage.app',
-    iosBundleId: 'com.app.Portex',
+    iosBundleId: 'com.app.portex',
   );
 
   // ---------------- WEB (Placeholder, update with real config) ----------------

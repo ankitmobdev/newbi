@@ -43,25 +43,21 @@ class AvailableDeliveriesScreen extends StatelessWidget {
 
       // -------------------- APPBAR --------------------
       appBar: AppBar(
-        backgroundColor:  AppColor.secondaryColor,
-        elevation: 1,
+        backgroundColor: AppColor.secondaryColor,
         centerTitle: true,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu, color: Colors.black),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        leading: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: const Icon(Icons.arrow_back_ios, size: 18, color: Colors.black),
         ),
         title: Text(
           "Available Deliveries",
           style: GoogleFonts.poppins(
-            color: Colors.black,
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.w600,
+            color: AppColor.primaryColor,
           ),
         ),
       ),
-
       // ------------------ BODY ------------------
       body: Stack(
         children: [

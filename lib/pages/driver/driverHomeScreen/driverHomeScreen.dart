@@ -3,6 +3,7 @@ import 'package:go_eat_e_commerce_app/constant.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../driverDrawerScreen/availableDeliveries.dart';
 import '../driverDrawerScreen/drawerScreenDriver.dart';
 
 class DriverHomeScreen extends StatefulWidget {
@@ -79,7 +80,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             right: 16,
             child: ElevatedButton(
               onPressed: () {
-
+                Helper.moveToScreenwithPush(context, AvailableDeliveriesScreen());
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColor.primaryColor,

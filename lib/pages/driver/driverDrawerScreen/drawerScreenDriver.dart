@@ -3,6 +3,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_eat_e_commerce_app/pages/drawerScreen/profile.dart';
 import 'package:go_eat_e_commerce_app/pages/drawerScreen/termsAndCondition.dart';
 import 'package:go_eat_e_commerce_app/pages/drawerScreen/wallet.dart';
+import 'package:go_eat_e_commerce_app/pages/driver/driverDrawerScreen/payout.dart';
+import 'package:go_eat_e_commerce_app/pages/driver/driverDrawerScreen/setting.dart';
+import 'package:go_eat_e_commerce_app/pages/driver/driverDrawerScreen/yourTripScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../constant.dart';
@@ -11,6 +14,7 @@ import '../../drawerScreen/helpScreen.dart';
 import '../../homeScreen/homeScreen.dart';
 import '../driverHomeScreen/driverHomeScreen.dart';
 import 'availableDeliveries.dart';
+import 'finantial.dart';
 
 
 class DriverCustomSideBar extends StatelessWidget {
@@ -93,7 +97,8 @@ class DriverCustomSideBar extends StatelessWidget {
                 child: _menuTile("Home", "assets/images/home.svg")),
             InkWell(
                 onTap: () {
-                  Helper.moveToScreenwithPush(context, AvailableDeliveriesScreen());
+
+                  Helper.moveToScreenwithPush(context, YourTripsScreen());
                 },
                 child: _menuTile("Your Trips", "assets/images/truck.svg")),
             _menuTile("History Service", "assets/images/historyService.svg"),
@@ -104,15 +109,20 @@ class DriverCustomSideBar extends StatelessWidget {
                 child: _menuTile("Profile", "assets/images/profile.svg")),
             InkWell(
                 onTap: () {
-                  Helper.moveToScreenwithPush(context, WalletScreen());
+                  Helper.moveToScreenwithPush(context, PayoutScreen());
                 },
-                child: _menuTile("Wallet", "assets/images/wallet.svg")),
+                child: _menuTile("Payout", "assets/images/wallet.svg")),
             InkWell(
                 onTap: () {
-                  Helper.moveToScreenwithPush(context, TermOfServiceScreen());
+                  Helper.moveToScreenwithPush(context, FinancialReportScreen());
+                },
+                child: _menuTile("Financial Reports", "assets/images/wallet.svg")),
+            InkWell(
+                onTap: () {
+                  Helper.moveToScreenwithPush(context, SettingScreen());
                 },
 
-                child: _menuTile("Faq", "assets/images/faq.svg")),
+                child: _menuTile("Setting", "assets/images/faq.svg")),
             _menuTile("About", "assets/images/about.svg"),
 
             InkWell(

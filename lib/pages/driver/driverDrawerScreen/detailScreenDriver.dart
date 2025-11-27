@@ -3,8 +3,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_eat_e_commerce_app/constant.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../tripScreens/completeTrip.dart';
+
 class DetailsFormDriverScreen extends StatefulWidget {
-  const DetailsFormDriverScreen({super.key});
+  final fromScreen;
+  const DetailsFormDriverScreen({super.key,this.fromScreen});
 
   @override
   State<DetailsFormDriverScreen> createState() => _DetailsFormDriverScreenState();
@@ -45,7 +48,7 @@ class _DetailsFormDriverScreenState extends State<DetailsFormDriverScreen> {
           ),
         ),
         actions: [
-          SvgPicture.asset("assets/images/track.svg", height: 34,width: 85,),
+          SvgPicture.asset("assets/images/track.svg", height: 40,width: 90,),
         ],
       ),
 
@@ -113,7 +116,7 @@ class _DetailsFormDriverScreenState extends State<DetailsFormDriverScreen> {
             sectionTitle("Total Items"),
             const SizedBox(height: 5),
             inputField("1. 8 Package"),
-            const SizedBox(height: 150),
+
           ],
         ),
       ),
@@ -147,23 +150,75 @@ class _DetailsFormDriverScreenState extends State<DetailsFormDriverScreen> {
               ),
             ),
             const SizedBox(height: 14),
-
+            widget.fromScreen=="trip"?
             Row(
               children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      showConfirmPopup(context,"start");
+                    },
+                    child: Container(
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Start Trips",
+                          style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Container(
                     height: 42,
                     decoration: BoxDecoration(
-                      color: Colors.black,
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.red, width: 1.3),
                     ),
                     child: Center(
                       child: Text(
-                        "Accept",
+                        "Report",
                         style: GoogleFonts.poppins(
-                            color: Colors.white,
+                            color: Colors.red,
                             fontSize: 14,
                             fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ):
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      showConfirmPopup(context,"accept");
+                    },
+                    child: Container(
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Accept",
+                          style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500),
+                        ),
                       ),
                     ),
                   ),
@@ -190,6 +245,7 @@ class _DetailsFormDriverScreenState extends State<DetailsFormDriverScreen> {
                 ),
               ],
             ),
+
           ],
         ),
       ),
@@ -229,6 +285,107 @@ class _DetailsFormDriverScreenState extends State<DetailsFormDriverScreen> {
           )
         ],
       ),
+    );
+  }
+
+
+  void showConfirmPopup(BuildContext context,String status) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // user must choose Cancel or Okay
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                // ---------------- TITLE ----------------
+                Text(
+                  status=="start"?
+                  "Start Delivery":
+                  "Accept Delivery",
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // ---------------- MESSAGE ----------------
+
+                Text(
+                  status=="start"?
+                 "Do you want to Start delivery?":
+                  "Do you want to accept delivery?",
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ---------------- BUTTONS ROW ----------------
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+
+                    // ❌ CANCEL BUTTON
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Text(
+                        "No",
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 24),
+
+                    // ✔ OKAY BUTTON
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColor.primaryColor, // black
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                      ),
+                      onPressed: () {
+                        status=="start"?
+                         Helper.moveToScreenwithPush(context, CompleteTripScreen()):
+                        Navigator.pop(context);
+
+                        // Add next action here
+                      },
+                      child: Text(
+                        "Yes",
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: AppColor.secondaryColor, // white
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -326,10 +483,10 @@ class _DetailsFormDriverScreenState extends State<DetailsFormDriverScreen> {
             decoration: BoxDecoration(
               border: Border.all(color: border),
               borderRadius: BorderRadius.circular(6),
-              color: value ? Colors.green.shade100 : Colors.white,
+              color: value ? AppColor.secondprimaryColor: Colors.white,
             ),
             child: value
-                ? const Icon(Icons.check, size: 16, color: Colors.green)
+                ?  Icon(Icons.check, size: 16, color: AppColor.secondaryColor)
                 : null,
           ),
         ),
