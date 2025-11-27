@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../constant.dart';
+import 'detailScreenDriver.dart';
+import 'drawerScreenDriver.dart';
 
 
 class AvailableDeliveriesScreen extends StatelessWidget {
@@ -31,21 +33,32 @@ class AvailableDeliveriesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+
 
       // ------------------ APP BAR ------------------
+
+
+      drawer: const DriverCustomSideBar(),
+      backgroundColor: AppColor.secondaryColor,
+
+      // -------------------- APPBAR --------------------
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor:  AppColor.secondaryColor,
         elevation: 1,
         centerTitle: true,
-        leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.arrow_back_ios, color: Colors.black),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: Colors.black),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
         ),
         title: Text(
           "Available Deliveries",
           style: GoogleFonts.poppins(
-              color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
+            color: Colors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
 
@@ -85,12 +98,17 @@ class AvailableDeliveriesScreen extends StatelessWidget {
 
               return Column(
                 children: [
-                  _deliveryCard(
-                    vehicle: item["vehicle"],
-                    date: item["date"],
-                    pickup: item["pickup"],
-                    drop: item["drop"],
-                    highlight: item["highlight"],
+                  InkWell(
+                    onTap: () {
+                      Helper.moveToScreenwithPush(context, DetailsFormDriverScreen());
+                    },
+                    child: _deliveryCard(
+                      vehicle: item["vehicle"],
+                      date: item["date"],
+                      pickup: item["pickup"],
+                      drop: item["drop"],
+                      highlight: item["highlight"],
+                    ),
                   ),
                   const SizedBox(height: 20),
                 ],
@@ -117,9 +135,6 @@ class AvailableDeliveriesScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.95),
         borderRadius: BorderRadius.circular(16),
-        border: highlight
-            ? Border.all(color: Colors.blueAccent, width: 2)
-            : Border.all(color: Colors.transparent),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.15),
@@ -275,13 +290,7 @@ class AvailableDeliveriesScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // COLORED DOT
-        Container(
-          width: 10,
-          height: 10,
-          margin: const EdgeInsets.only(top: 4),
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 10),
+
 
         Expanded(
           child: Column(

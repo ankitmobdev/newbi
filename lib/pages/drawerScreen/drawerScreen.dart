@@ -8,6 +8,7 @@ import '../../constant.dart';
 import '../homeScreen/homeScreen.dart';
 import 'currentServices.dart';
 import 'helpScreen.dart';
+import 'historyScreen.dart';
 
 class CustomSideBar extends StatelessWidget {
   const CustomSideBar({super.key});
@@ -92,7 +93,11 @@ class CustomSideBar extends StatelessWidget {
                 Helper.moveToScreenwithPush(context, CurrentServiceScreen());
               },
                 child: _menuTile("Current Service", "assets/images/currentService.svg")),
-            _menuTile("History Service", "assets/images/historyService.svg"),
+            InkWell(
+                onTap: () {
+                 Helper.moveToScreenwithPush(context, HistoryServiceScreen());
+                  },
+                child: _menuTile("History Service", "assets/images/historyService.svg")),
             InkWell(
               onTap: () {
                 Helper.moveToScreenwithPush(context, ProfileScreen());
