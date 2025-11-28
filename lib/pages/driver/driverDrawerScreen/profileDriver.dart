@@ -7,15 +7,16 @@ import 'package:image_picker/image_picker.dart';
 import '../../../constant.dart';
 import '../../registrationScreen/loginUser.dart';
 import '../driverHomeScreen/driverHomeScreen.dart';
+import 'drawerScreenDriver.dart';
 
-class DriverSignupScreen extends StatefulWidget {
-  const DriverSignupScreen({super.key});
+class ProfileDriverScreen extends StatefulWidget {
+  const ProfileDriverScreen({super.key});
 
   @override
-  State<DriverSignupScreen> createState() => _DriverSignupScreenState();
+  State<ProfileDriverScreen> createState() => _ProfileDriverScreenState();
 }
 
-class _DriverSignupScreenState extends State<DriverSignupScreen> {
+class _ProfileDriverScreenState extends State<ProfileDriverScreen> {
   final TextEditingController _fullName = TextEditingController();
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
@@ -60,24 +61,24 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
     const bgAsset = "assets/images/splashbackground.png";
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
+      drawer: DriverCustomSideBar(),
+      backgroundColor: Colors.white,
 
+      // ---------------- APP BAR ----------------
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: Colors.white,
+        elevation: 1,
         centerTitle: true,
-        leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: SvgPicture.asset("assets/images/back.svg", height: 42),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: Colors.black),
+            onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
         title: Text(
-          "Sign Up",
+          "Profile",
           style: GoogleFonts.poppins(
-            color: Colors.white,
+            color: Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -237,27 +238,19 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
 
                   const SizedBox(height: 18),
 
-                  // DO YOU HELP AIDE
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: helpAide,
-                        onChanged: (v) => setState(() => helpAide = v!),
-                        activeColor: Colors.white,
-                        checkColor: Colors.black,
-                      ),
-                      Text(
-                        "Do You Help Aide",
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                      )
-                    ],
+                  Divider(
+                    color: AppColor.secondaryColor,
+                    thickness: 2,
+                  ),
+                  const SizedBox(height: 18),
+
+                  Text(
+                    "Help Aide Profile",
+                    style: GoogleFonts.poppins(
+                        color: AppColor.secondaryColor, fontSize: 18,fontWeight: FontWeight.w600),
                   ),
 
-                  // EXPAND ADDITIONAL FIELDS
-                  if (helpAide) ...[
+                  const SizedBox(height: 18),
 
                     // AIDE PROFILE IMAGE
                     Center(
@@ -322,7 +315,7 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
 
                     phoneFieldForAide(),
                     const SizedBox(height: 18),
-                  ],
+
 
 
                   const SizedBox(height: 22),

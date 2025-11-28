@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constant.dart';
+import '../driver/driverDrawerScreen/drawerScreenDriver.dart';
 import 'drawerScreen.dart';
 
 class HelpScreen extends StatefulWidget {
-  const HelpScreen({super.key});
+  final fromScreen;
+  const HelpScreen({super.key,this.fromScreen});
 
   @override
   State<HelpScreen> createState() => _HelpScreenState();
@@ -28,7 +30,7 @@ class _HelpScreenState extends State<HelpScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
-      drawer: const CustomSideBar(),
+      drawer: widget.fromScreen=="driver"?DriverCustomSideBar():CustomSideBar(),
 
       // -------------------- APPBAR --------------------
       appBar: AppBar(

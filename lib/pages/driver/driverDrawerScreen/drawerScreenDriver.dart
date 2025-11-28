@@ -4,6 +4,7 @@ import 'package:go_eat_e_commerce_app/pages/drawerScreen/profile.dart';
 import 'package:go_eat_e_commerce_app/pages/drawerScreen/termsAndCondition.dart';
 import 'package:go_eat_e_commerce_app/pages/drawerScreen/wallet.dart';
 import 'package:go_eat_e_commerce_app/pages/driver/driverDrawerScreen/payout.dart';
+import 'package:go_eat_e_commerce_app/pages/driver/driverDrawerScreen/profileDriver.dart';
 import 'package:go_eat_e_commerce_app/pages/driver/driverDrawerScreen/setting.dart';
 import 'package:go_eat_e_commerce_app/pages/driver/driverDrawerScreen/yourTripScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,6 +16,7 @@ import '../../homeScreen/homeScreen.dart';
 import '../driverHomeScreen/driverHomeScreen.dart';
 import 'availableDeliveries.dart';
 import 'finantial.dart';
+import 'notificationScreen.dart';
 
 
 class DriverCustomSideBar extends StatelessWidget {
@@ -101,10 +103,17 @@ class DriverCustomSideBar extends StatelessWidget {
                   Helper.moveToScreenwithPush(context, YourTripsScreen());
                 },
                 child: _menuTile("Your Trips", "assets/images/truck.svg")),
-            _menuTile("History Service", "assets/images/historyService.svg"),
+
             InkWell(
                 onTap: () {
-                  Helper.moveToScreenwithPush(context, ProfileScreen());
+
+                  Helper.moveToScreenwithPush(context, NotificationScreen());
+                },
+
+                child: _menuTile("Notification", "assets/images/notification.svg")),
+            InkWell(
+                onTap: () {
+                  Helper.moveToScreenwithPush(context, ProfileDriverScreen());
                 },
                 child: _menuTile("Profile", "assets/images/profile.svg")),
             InkWell(
@@ -116,18 +125,18 @@ class DriverCustomSideBar extends StatelessWidget {
                 onTap: () {
                   Helper.moveToScreenwithPush(context, FinancialReportScreen());
                 },
-                child: _menuTile("Financial Reports", "assets/images/wallet.svg")),
+                child: _menuTile("Financial Reports", "assets/images/financialReports.svg")),
             InkWell(
                 onTap: () {
                   Helper.moveToScreenwithPush(context, SettingScreen());
                 },
 
-                child: _menuTile("Setting", "assets/images/faq.svg")),
-            _menuTile("About", "assets/images/about.svg"),
+                child: _menuTile("Setting", "assets/images/settings.svg")),
+
 
             InkWell(
                 onTap: () {
-                  Helper.moveToScreenwithPush(context, HelpScreen());
+                  Helper.moveToScreenwithPush(context, HelpScreen(fromScreen: "driver",));
                 },
                 child: _menuTile("Help", "assets/images/help.svg")),
 

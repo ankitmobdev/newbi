@@ -4,6 +4,7 @@ import 'package:go_eat_e_commerce_app/pages/registrationScreen/signupScreenUser.
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../constant.dart';
+import '../driver/driverHomeScreen/driverHomeScreen.dart';
 import '../driver/registration/signupDriver.dart';
 import '../homeScreen/homeScreen.dart';
 
@@ -160,6 +161,8 @@ class _LoginUserState extends State<LoginUser> {
                 // LOGIN BUTTON
                 GestureDetector(
                   onTap: () {
+                    widget.loginas=="driver"?
+                    Helper.moveToScreenwithPush(context, DriverHomeScreen()):
                     Helper.moveToScreenwithPush(context, HomeScreen());
                   },
 
