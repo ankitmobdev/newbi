@@ -1,13 +1,16 @@
 import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart' as local_notifications;
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_eat_e_commerce_app/pages/splash.dart';
 
+import 'SharedPreference/AppSession.dart';
 import 'firebase_options.dart';
 
 
@@ -52,7 +55,9 @@ void showLocalNotification(RemoteMessage message) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await AppSession.init();  // IMPORTANT
+
+  await Firebase.initializeApp();
 
   usePathUrlStrategy();
 
@@ -86,14 +91,72 @@ void main() async {
 // ───────────────────────────────────────────────────────────
 // APPLICATION ROOT
 // ───────────────────────────────────────────────────────────
+//
+// Future<void> main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//
+//   // 1️⃣ Initialize Firebase FIRST — nothing before this
+//   // await Firebase.initializeApp(
+//   //   options: DefaultFirebaseOptions.currentPlatform,
+//   // );
+//   await Firebase.initializeApp();
+//   // 2️⃣ Register background handler AFTER Firebase init
+//   FirebaseMessaging.onBackgroundMessage(backgroundHandler);
+//
+//   // 3️⃣ Load SharedPreferences
+//   await AppSession.init();
+//
+//   // 4️⃣ Notification system init
+//   initializeLocalNotification();
+//
+//   // 5️⃣ FCM permissions
+//   await FirebaseMessaging.instance.requestPermission();
+//
+//   // 6️⃣ Path strategy (only affects Web)
+//   usePathUrlStrategy();
+//
+//   // 7️⃣ Now run your app
+//   runApp(MyApp());
+// }
+
+// Function to track driver location and update in Firebase
+void trackDriverLocation(String driverId, String vehicleType) async {
+  Geolocator.getPositionStream(locationSettings: LocationSettings(accuracy: LocationAccuracy.high))
+      .listen((Position position) {
+    if (position != null) {
+      DatabaseReference databaseRef = FirebaseDatabase.instance.reference();
+
+      Map<String, dynamic> locationData = {
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+        'driver_id': driverId,
+        'vehicle_type': vehicleType.toLowerCase(),
+      };
+
+      databaseRef.child('driver_list').child(driverId).set(locationData).then((_) {
+        print("Location updated: $locationData");
+      }).catchError((error) {
+        print("Failed to update location: $error");
+      });
+    }
+  });
+}
 class MyApp extends StatefulWidget {
   @override
   State<MyApp> createState() => _MyAppState();
+  // ✅ Fixed: expose public state type instead of private one
+  static _MyAppState of(BuildContext context) =>
+      context.findAncestorStateOfType<_MyAppState>()!;
+// ✅ Added static getter for global messenger key
+  static GlobalKey<ScaffoldMessengerState> get messengerKey =>
+      _MyAppState.rootMessengerKey;
 }
 
 class _MyAppState extends State<MyApp> {
   Locale? _locale;
   ThemeMode _themeMode = ThemeMode.light;
+  static final GlobalKey<ScaffoldMessengerState> rootMessengerKey =
+  GlobalKey<ScaffoldMessengerState>();
 
   void setLocale(String language) {
     setState(() => _locale = Locale(language));
@@ -106,7 +169,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'GoEatDriverApp',
+      title: 'Portex',
       debugShowCheckedModeBanner: false,
       locale: _locale,
       supportedLocales: const [

@@ -65,7 +65,7 @@
             android:value="2" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyC6-dShs1BZyx1yI6b3gHIuOV1cgpicJyw "/>
+            android:value="AIzaSyAOh01_w1CVjtvSNClDYyYe3aO-JCnNgoQ"/>
         <!-- stripe account setup-->
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"

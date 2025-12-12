@@ -1,19 +1,48 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../../constant.dart';
+import '../../models/Global.dart';
+import '../../models/OrderData.dart';
+import '../furnitureFlow/addItemFurniture.dart';
+import '../movingHelp/appliance.dart';
 import 'addItemScreen.dart';
 import 'aideDriver.dart';
 
-class AddItemsSummaryScreen extends StatelessWidget {
-  AddItemsSummaryScreen({super.key});
+class AddItemsSummaryScreen extends StatefulWidget {
+  final OrderData? orderData;
+  const AddItemsSummaryScreen({
+    super.key,
+    this.orderData,
+  });
+  @override
+  State<AddItemsSummaryScreen> createState() => _AddItemsSummaryScreenState();
+}
 
+class _AddItemsSummaryScreenState extends State<AddItemsSummaryScreen> {
   final List<String> itemList = [
     "Chair (Small Item)",
     "Table (Medium Item)",
     "Fridge (Large Item)",
     "Box (Small Item)",
   ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    String json = jsonEncode(Global.packageList.map((item) => {
+      "categoryName": item.categoryName,
+      "subcategory": item.subcategory,
+      "quantity": item.quantity,
+      "instruction": item.instruction,
+      "extraSubcategory": item.extraSubcategory,
+      "price": item.price,
+    }).toList());
+
+    debugPrint("📦 package_list_json: $json");
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +76,7 @@ class AddItemsSummaryScreen extends StatelessWidget {
           children: [
             // TITLE
             Text(
-              "Total ${itemList.length} Items",
+              "Total ${Global.packageList.length} Items",
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 color: AppColor.textclr,
@@ -56,32 +85,72 @@ class AddItemsSummaryScreen extends StatelessWidget {
             const SizedBox(height: 12),
 
             // LIST OF ITEMS
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: itemList.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.black12),
-                  ),
-                  child: Text(
-                    "${index + 1}. ${itemList[index]}",
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: Colors.black87,
-                    ),
-                  ),
-                );
-              },
-            ),
+            // LIST OF ITEMS
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: Global.packageList.length,
+            itemBuilder: (context, index) {
+              final item = Global.packageList[index];
 
-            const SizedBox(height: 40),
+              final bool showSubCategory =
+                  widget.orderData!.bookingType == "FurnitureDelivery" ||
+                      widget.orderData!.bookingType == "MovingHelp";
+
+              return Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.black12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // FIRST ROW → Quantity + Category
+                    Row(
+                      children: [
+                        Text(
+                          item.quantity ?? "0",
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+
+                        // CATEGORY NAME
+                        Text(
+                          item.categoryName ?? "",
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // SUBCATEGORY (Only for FurnitureDelivery / MovingHelp)
+                    if (showSubCategory && (item.subcategory?.isNotEmpty ?? false)) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        item.subcategory ?? "",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(height: 40),
 
             // ---------------- ADD ANOTHER ITEM ----------------
             SizedBox(
@@ -89,7 +158,25 @@ class AddItemsSummaryScreen extends StatelessWidget {
               height: 48,
               child: OutlinedButton(
                 onPressed: () {
-                  Helper.moveToScreenwithPush(context, AddItemsScreen());
+
+                  debugPrint("=====screen_9=${widget.orderData!.bookingType}");
+                  if (widget.orderData!.bookingType == "FurnitureDelivery"/* || widget.orderData!.bookingType == "MovingHelp"*/) {
+                    Helper.moveToScreenwithPush(
+                      context,
+                      AddItemsFurnitureScreen(orderData: widget.orderData),
+                    );
+                  } else if (widget.orderData!.bookingType == "MovingHelp") {
+                    Helper.moveToScreenwithPush(
+                      context,
+                      ApplianceDetailsScreen(orderData: widget.orderData),
+                    );
+                  } else {
+                    Helper.moveToScreenwithPush(
+                      context,
+                      AddItemsScreen(orderData: widget.orderData),
+                    );
+                  }
+
                 },
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Colors.black, width: 1.2),
@@ -117,7 +204,9 @@ class AddItemsSummaryScreen extends StatelessWidget {
               height: 48,
               child: ElevatedButton(
                 onPressed: () {
-                  Helper.moveToScreenwithPush(context, AideDriverScreen());
+                  Helper.moveToScreenwithPush(context,
+                    AideDriverScreen(orderData: widget.orderData),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,

@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constant.dart';
-import '../retailScreenFlow/addItem3.dart';
+import '../../models/OrderData.dart';
 import '../retailScreenFlow/aideDriver.dart';
 
-
 class AddItemsDetailMovingScreen2 extends StatefulWidget {
-  const AddItemsDetailMovingScreen2({super.key});
-
+  final OrderData? orderData;
+  const AddItemsDetailMovingScreen2({super.key, this.orderData});
   @override
   State<AddItemsDetailMovingScreen2> createState() => _AddItemsDetailMovingScreen2State();
 }
@@ -18,7 +17,6 @@ class _AddItemsDetailMovingScreen2State extends State<AddItemsDetailMovingScreen
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.secondaryColor,
-
       // ---------------- APPBAR ----------------
       appBar: AppBar(
         backgroundColor: AppColor.secondaryColor,
@@ -71,10 +69,10 @@ class _AddItemsDetailMovingScreen2State extends State<AddItemsDetailMovingScreen
               ),
             ),
 
-            const SizedBox(height: 20),
+            //const SizedBox(height: 20),
 
             // ---------------- UPLOAD IMAGE BOX ----------------
-            Container(
+            /*Container(
               height: 150,
               width: double.infinity,
               decoration: BoxDecoration(
@@ -105,7 +103,7 @@ class _AddItemsDetailMovingScreen2State extends State<AddItemsDetailMovingScreen
                   ],
                 ),
               ),
-            ),
+            ),*/
 
             const SizedBox(height: 40),
 

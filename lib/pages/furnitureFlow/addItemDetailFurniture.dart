@@ -1,13 +1,24 @@
+import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../constant.dart';
+import '../../models/OrderData.dart';
+import '../../models/SubcategoryDatum.dart';
+import '../../services/api_client.dart';
+import '../../services/api_constants.dart';
+import '../retailScreenFlow/addItem2.dart';
+import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../constant.dart';
-import '../retailScreenFlow/addItem2.dart';
+import 'addItemCategory.dart';
 
 class AddItemsDetailFurnitureScreen extends StatefulWidget {
   final String? selectedMainItem;
-  const AddItemsDetailFurnitureScreen({super.key, this.selectedMainItem});
+  final OrderData? orderData;
+
+  const AddItemsDetailFurnitureScreen({super.key, this.selectedMainItem, this.orderData});
 
   @override
   State<AddItemsDetailFurnitureScreen> createState() => _AddItemsDetailFurnitureScreenState();
@@ -17,21 +28,52 @@ class _AddItemsDetailFurnitureScreenState extends State<AddItemsDetailFurnitureS
   final TextEditingController searchController = TextEditingController();
   String query = "";
 
-  String selectedSubItem = "Queen Bed Frame";
+  bool loading = true;
+  bool error = false;
+  List<SubcategoryDatum> subCategoryList = [];
+  String? selectedSubItem;
+  String? selectedSubItemPrice;
 
-  final List<String> subItems = [
-    "Queen Bed Frame",
-    "King Bed Frame",
-    "Twin Bed Frame",
-    "Full Bed Frame",
-  ];
+  @override
+  void initState() {
+    super.initState();
+    loadSubcategories();
+  }
+
+  Future<void> loadSubcategories() async {
+    setState(() {
+      loading = true;
+      error = false;
+    });
+
+    final result = await callSubCategoryListApi(widget.selectedMainItem ?? '');
+
+    if (result == null) {
+      // API error
+      setState(() {
+        loading = false;
+        error = true;
+      });
+      return;
+    }
+
+    setState(() {
+      subCategoryList = result;
+      loading = false;
+    });
+
+    // optionally set default selected item
+    // if (subCategoryList.isNotEmpty) {
+    //   selectedSubItem = subCategoryList.first.subcategory;
+    //   selectedSubItemPrice = subCategoryList.first.price;
+    // }
+
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.secondaryColor,
-
-      // ------------------- APPBAR -------------------
       appBar: AppBar(
         backgroundColor: AppColor.secondaryColor,
         elevation: 0,
@@ -49,14 +91,12 @@ class _AddItemsDetailFurnitureScreenState extends State<AddItemsDetailFurnitureS
           ),
         ),
       ),
-
-      // ------------------- BODY -------------------
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ------------------- SEARCH BOX -------------------
+            // header showing selected main item
             Container(
               height: 48,
               padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -69,7 +109,7 @@ class _AddItemsDetailFurnitureScreenState extends State<AddItemsDetailFurnitureS
                 children: [
                   Expanded(
                     child: Text(
-                      widget.selectedMainItem ?? "Bed Frame",
+                      widget.selectedMainItem ?? "Category",
                       style: GoogleFonts.poppins(
                         color: Colors.black,
                         fontSize: 16,
@@ -87,68 +127,129 @@ class _AddItemsDetailFurnitureScreenState extends State<AddItemsDetailFurnitureS
 
             const SizedBox(height: 20),
 
-            // ------------------- SUB ITEMS LIST -------------------
+            // content
             Expanded(
-              child: ListView.builder(
-                itemCount: subItems.length,
-                itemBuilder: (_, index) {
-                  final item = subItems[index];
-                  bool isSelected = item == selectedSubItem;
+              child: Builder(builder: (_) {
+                if (loading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() => selectedSubItem = item
-                      );
-                      Helper.moveToScreenwithPush(context, AddItemsDetailScreen());
-                    },
+                if (error) {
+                  return Center(
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 14),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Colors.grey.shade300,
-                                width: isSelected ? 2 : 1,
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                item,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 15,
-                                  color: Colors.black,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                                ),
-                              ),
-
-                              // Radio Circle
-                              Icon(
-                                isSelected
-                                    ? Icons.radio_button_checked
-                                    : Icons.radio_button_unchecked,
-                                color: isSelected
-                                    ? Colors.black
-                                    : Colors.grey,
-                              ),
-                            ],
-                          ),
+                        const Text('Failed to load subcategories'),
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: loadSubcategories,
+                          child: const Text('Retry'),
                         ),
                       ],
                     ),
                   );
-                },
-              ),
+                }
+
+                if (subCategoryList.isEmpty) {
+                  return const Center(child: Text('No subcategories found'));
+                }
+
+                final filtered = subCategoryList.where((s) => s.subcategory.toLowerCase().contains(query)).toList();
+
+                return ListView.separated(
+                  itemCount: filtered.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (_, index) {
+                    final item = filtered[index];
+                    final itemTitle = item.subcategory;
+                    final isSelected = itemTitle == selectedSubItem;
+
+                    return InkWell(
+                      onTap: () {
+                        setState(() {
+                          selectedSubItem = itemTitle;
+                          selectedSubItemPrice = item.price;
+                        });
+
+                        // Navigate to next screen with selected subcategory (pass whatever you need)
+                        Helper.moveToScreenwithPush(
+                          context,
+                          AddItemsCategoryScreen(
+                            // pass the data you need in AddItemsDetailScreen constructor
+                            selectedMainItem: widget.selectedMainItem,
+                            selectedSubItem: selectedSubItem,
+                            selectedSubItemPrice: selectedSubItemPrice,
+                            orderData: widget.orderData,
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                        color: Colors.white,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                itemTitle,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 15,
+                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Icon(
+                                  isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                  color: isSelected ? Colors.black : Colors.grey,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }),
             ),
           ],
         ),
       ),
     );
   }
+
+  Future<List<SubcategoryDatum>?> callSubCategoryListApi(String categoryName) async {
+    try {
+      final body = {
+        'code': ApiCode.kcode, // or 'app_token' if you use token
+        'category_name': categoryName,
+        // add driver id or other params if required:
+        // 'driver_id': AppSession(...).user.data.userId.toString(),
+      };
+
+      final response = await ApiClient.dio.post(
+        BaseURl.baseUrl + ApiAction.menuSubcategory, // <-- replace ApiAction.subCategory with actual action constant
+        data: FormData.fromMap(body),
+      );
+
+      // response.data can be String or already a Map
+      final dynamic raw = response.data;
+      final Map<String, dynamic> jsonMap = raw is String ? jsonDecode(raw) : raw;
+
+      if (jsonMap['result'] != null && jsonMap['result'].toString().toLowerCase() == 'success') {
+        final List data = jsonMap['deliverydata'] ?? jsonMap['data'] ?? [];
+        return data.map((e) => SubcategoryDatum.fromJson(e as Map<String, dynamic>)).toList();
+      } else {
+        return [];
+      }
+    } catch (e, st) {
+      print('callSubCategoryListApi ERROR: $e\n$st');
+      return null;
+    }
+  }
+
 }

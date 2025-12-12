@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:go_eat_e_commerce_app/constant.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../drawerScreen/drawerScreen.dart';
 import '../retailScreenFlow/fillDetailScreen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+
+  String bookingType = "";
+
+  @override
+  void initState() {
+    super.initState();
+
+    debugPrint("=====screen=${bookingType}");
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +57,10 @@ class HomeScreen extends StatelessWidget {
           children: [
             InkWell(
               onTap: () {
-                Helper.moveToScreenwithPush(context, DetailsScreen(fromScreen: "retail",));
+                Helper.moveToScreenwithPush(
+                  context,
+                  DetailsScreen(fromScreen: "retail", bookingType: "RetailStore"),
+                );
               },
               child: buildServiceTile(
                 icon: "assets/images/retail.png",
@@ -53,7 +71,10 @@ class HomeScreen extends StatelessWidget {
 
             InkWell(
               onTap: () {
-                Helper.moveToScreenwithPush(context, DetailsScreen(fromScreen: "online",));
+                Helper.moveToScreenwithPush(
+                  context,
+                  DetailsScreen(fromScreen: "online", bookingType: "OnlineMarket"),
+                );
               },
               child: buildServiceTile(
                 icon: "assets/images/online.png",
@@ -64,7 +85,10 @@ class HomeScreen extends StatelessWidget {
 
             InkWell(
               onTap: () {
-                Helper.moveToScreenwithPush(context, DetailsScreen(fromScreen: "furniture",));
+                Helper.moveToScreenwithPush(
+                  context,
+                  DetailsScreen(fromScreen: "furniture", bookingType: "FurnitureDelivery"),
+                );
               },
               child: buildServiceTile(
                 icon: "assets/images/furniture.png",
@@ -75,7 +99,10 @@ class HomeScreen extends StatelessWidget {
 
             InkWell(
               onTap: () {
-                Helper.moveToScreenwithPush(context, DetailsScreen(fromScreen: "moving",));
+                Helper.moveToScreenwithPush(
+                  context,
+                  DetailsScreen(fromScreen: "moving", bookingType: "MovingHelp"),
+                );
               },
               child: buildServiceTile(
                 icon: "assets/images/moving.png",
@@ -86,7 +113,10 @@ class HomeScreen extends StatelessWidget {
 
             InkWell(
               onTap: () {
-                Helper.moveToScreenwithPush(context, DetailsScreen(fromScreen: "courier",));
+                Helper.moveToScreenwithPush(
+                  context,
+                  DetailsScreen(fromScreen: "courier", bookingType: "CourierService"),
+                );
               },
               child: buildServiceTile(
                 icon: "assets/images/courier.png",
@@ -99,12 +129,14 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+
+
   // ---------------------------------------------------
-  // SERVICE CARD WIDGET (MATCHES SCREENSHOT)
+  // SERVICE TILE WIDGET
   // ---------------------------------------------------
   Widget buildServiceTile({required String icon, required String title}) {
     return Container(
-      padding: EdgeInsets.only(right: 15),
+      padding: const EdgeInsets.only(right: 15),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -118,19 +150,14 @@ class HomeScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Left Black Icon Box
           Center(
             child: Image.asset(
               icon,
               width: 67,
               height: 90,
-
             ),
           ),
-
           const SizedBox(width: 14),
-
-          // Title Text
           Expanded(
             child: Text(
               title,
@@ -141,9 +168,11 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-
-          // Arrow
-           Icon(Icons.arrow_forward_ios, size: 18, color: AppColor.primaryColor),
+          Icon(
+            Icons.arrow_forward_ios,
+            size: 18,
+            color: AppColor.primaryColor,
+          ),
         ],
       ),
     );

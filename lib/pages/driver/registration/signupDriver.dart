@@ -1,10 +1,16 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:country_picker/country_picker.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../SharedPreference/AppSession.dart';
 import '../../../constant.dart';
+import '../../../models/usermodel.dart';
+import '../../../services/auth_service.dart';
+import '../../mapScreens/mapScreen.dart';
 import '../../registrationScreen/loginUser.dart';
 import '../driverHomeScreen/driverHomeScreen.dart';
 
@@ -25,11 +31,16 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
   final TextEditingController _aideName = TextEditingController();
   final TextEditingController _aideEmail = TextEditingController();
   final TextEditingController _aidePhone = TextEditingController();
+  final TextEditingController selectLocation = TextEditingController();
 
   // Country variables
-  String selectedCountryCode = "IN";
-  String selectedDialCode = "+91";
-  String selectedFlag = "🇮🇳";
+  // String selectedCountryCode = "IN";
+  // String selectedDialCode = "+91";
+  // String selectedFlag = "🇮🇳";
+  // 🇬🇧 DEFAULT: United Kingdom
+  String selectedCountryCode = "GB";
+  String selectedDialCode = "+44";
+  String selectedFlag = "🇬🇧";
   XFile? aideProfileImage;
   // Image picker variables
   XFile? frontImage;
@@ -53,6 +64,14 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
   // Simple image picker
   Future<XFile?> pickImage() async {
     return await ImagePicker().pickImage(source: ImageSource.gallery);
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    FirebaseMessaging.instance.requestPermission().then((_) =>
+        getDeviceTokenToSendNotification());
   }
 
   @override
@@ -330,8 +349,8 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
                   // SIGN UP BUTTON
                   GestureDetector(
                     onTap: () {
-                      // validateAndSubmit();
-                      Helper.moveToScreenwithPush(context, DriverHomeScreen());
+                       validateAndSubmit();
+                      // Helper.moveToScreenwithPush(context, DriverHomeScreen());
                     },
                     child: Container(
                       height: 48,
@@ -421,9 +440,14 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
       errorMessage = "Passwords do not match";
     } else if (selectedVehicle == null) {
       errorMessage = "Please select a vehicle type";
-    } else if (_vehicleNo.text.isEmpty) {
+    }
+    else if (_vehicleNo.text.isEmpty) {
       errorMessage = "Enter your vehicle number";
-    } else if (frontImage == null || backImage == null) {
+    }
+    else if (selectLocation.text.isEmpty) {
+      errorMessage = "Enter your Location";
+    }
+    else if (frontImage == null || backImage == null) {
       errorMessage = "Please upload front & back license images";
     }
 
@@ -462,11 +486,31 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
         ),
       ),
     );
+    if (errorMessage != null) {
+      // show error snackbar
+      return;
+    }
 
-    Helper.moveToScreenwithPush(context, DriverHomeScreen());
+// If success → call API
+    registerDriver();
     print("🎉 SUBMITTED SUCCESSFULLY!");
+
   }
 
+  Future<void> getDeviceTokenToSendNotification() async {
+    try {
+      final FirebaseMessaging fcm = FirebaseMessaging.instance;
+      final token = await fcm.getToken();
+
+      if (token != null && token.isNotEmpty) {
+        AppSession().deviceToken = token;
+
+        debugPrint("✅ DEVICE TOKEN SAVED: $token");
+      }
+    } catch (e) {
+      debugPrint("❌ FCM TOKEN ERROR: $e");
+    }
+  }
 
   // TEXT FIELD BUILDER
   Widget buildField({
@@ -517,14 +561,6 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Row(
         children: [
-          // LEFT ICON
-
-
-
-
-
-
-          // FULL WIDTH DROPDOWN
           Expanded(
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
@@ -747,30 +783,62 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
   Widget buildLocationSelector() {
     return GestureDetector(
       onTap: () {
-        print("Select Location tapped");
+        Helper.moveToScreenwithPush(
+          context,
+          LocationWidget(
+            callback: (String location, double latitude, double longitude) {
+              setState(() {
+                selectLocation.text = location;
+              });
+            },
+          ),
+        );
       },
-      child: Container(
-        height: 48,
-        decoration: BoxDecoration(
-          color: AppColor.secondaryColor,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 14),
-            SvgPicture.asset("assets/images/location.svg", height: 22),
-            const SizedBox(width: 14),
-            Container(width: 1, height: 26, color: AppColor.textclr),
-            const SizedBox(width: 14),
-            Text(
-              "Select Location",
-              style: GoogleFonts.poppins(color: AppColor.textclr, fontSize: 15),
-            ),
-          ],
+      child: AbsorbPointer( // ⛔ prevents keyboard from opening
+        child: Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: AppColor.secondaryColor,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+
+          child: Row(
+            children: [
+              SvgPicture.asset("assets/images/location.svg", height: 22),
+
+              const SizedBox(width: 14),
+
+              Container(width: 1, height: 26, color: AppColor.textclr),
+
+              const SizedBox(width: 14),
+
+              // ⭐ TextFormField (read-only)
+              Expanded(
+                child: TextFormField(
+                  controller: selectLocation,
+                  readOnly: true,
+                  style: GoogleFonts.poppins(
+                    color: AppColor.textclr,
+                    fontSize: 15,
+                  ),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: "Select Location",
+                    hintStyle: GoogleFonts.poppins(
+                      color: AppColor.textclr.withOpacity(0.7),
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
 
 
 
@@ -879,5 +947,73 @@ class _DriverSignupScreenState extends State<DriverSignupScreen> {
       ),
     );
   }
+
+
+  void registerDriver() async {
+    try {
+      final res = await AuthService.driverRegister(
+        firstname: _fullName.text.split(" ").first,
+        lastname: _fullName.text.split(" ").length > 1
+            ? _fullName.text.split(" ").last
+            : "",
+        email: _email.text,
+        phone: _phone.text,
+        password: _password.text,
+        deviceToken: AppSession().deviceToken,
+        deviceType: Platform.isIOS ? "ios" : "android",
+        countryCode: selectedCountryCode,
+        phoneCode: selectedDialCode,
+        address: selectLocation.text,
+        socialType: "normal",
+        socialId: "",
+        licencePlateNo: _vehicleNo.text,
+        vehiclePlateNo: _vehicleNo.text,
+        vehicleType: selectedVehicle ?? "",
+        profileImage: profileImage!,
+        licenceFrontImage: frontImage!,
+        licenceBackImage: backImage!,
+        helpAideStatus: helpAide ? "1" : "0",
+        aideProfile: aideProfileImage,
+        aideName: _aideName.text,
+        aideEmail: _aideEmail.text,
+        aidePhone: _aidePhone.text,
+        aidePhoneCode: selectedDialCode,
+      );
+
+      print("📥 Registration API Response: $res");
+
+      // -------- FIXED JSON HANDLING (same as login) --------
+      final jsonMap = res is String ? jsonDecode(res.toString()) : res;
+
+      final model = LoginModel.fromJson(jsonMap);
+
+      // -------- SUCCESS HANDLING --------
+      if (model.result == "success" && model.data != null) {
+
+        // ⭐ SAVE SESSION JUST LIKE LOGIN
+        await AppSession().saveUser(model);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Registration Successful!")),
+        );
+
+        // Move to driver home
+        Helper.moveToScreenwithPush(context, DriverHomeScreen());
+
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(model.message ?? "Something went wrong")),
+        );
+      }
+
+    } catch (e) {
+      print("❌ Registration Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
+  }
+
+
 
 }

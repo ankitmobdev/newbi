@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:go_eat_e_commerce_app/pages/homeScreen/homeScreen.dart';
 
 import '../SharedPreference/AppSession.dart';
+import '../constant.dart';
+import 'driver/driverHomeScreen/driverHomeScreen.dart';
 import 'onboardingscreens.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -26,7 +29,9 @@ class _SplashScreenState extends State<SplashScreen> {
           MaterialPageRoute(builder: (context) => OnboardingScreen()),
         );
       } else {
-        Navigator.pushNamed(context, 'HomePage');
+        AppSession().userType=="2"?
+        Helper.moveToScreenwithPush(context, DriverHomeScreen()):
+        Helper.moveToScreenwithPush(context, HomeScreen());
       }
     });
   }
@@ -68,21 +73,21 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
 
           // Bottom iOS-style indicator
-          Positioned(
-            bottom: 28,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                height: 5,
-                width: 120,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-            ),
-          ),
+          // Positioned(
+          //   bottom: 28,
+          //   left: 0,
+          //   right: 0,
+          //   child: Center(
+          //     child: Container(
+          //       height: 5,
+          //       width: 120,
+          //       decoration: BoxDecoration(
+          //         color: Colors.white.withOpacity(0.9),
+          //         borderRadius: BorderRadius.circular(3),
+          //       ),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

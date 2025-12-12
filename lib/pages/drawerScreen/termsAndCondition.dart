@@ -25,7 +25,7 @@ class TermOfServiceScreen extends StatelessWidget {
           ),
         ),
         title: Text(
-          "Term of Service",
+          "About",
           style: GoogleFonts.poppins(
             color: AppColor.primaryColor,
             fontSize: 18,

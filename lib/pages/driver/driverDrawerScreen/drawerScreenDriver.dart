@@ -8,20 +8,19 @@ import 'package:go_eat_e_commerce_app/pages/driver/driverDrawerScreen/profileDri
 import 'package:go_eat_e_commerce_app/pages/driver/driverDrawerScreen/setting.dart';
 import 'package:go_eat_e_commerce_app/pages/driver/driverDrawerScreen/yourTripScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:lottie/lottie.dart';
+import '../../../SharedPreference/AppSession.dart';
 import '../../../constant.dart';
-import '../../drawerScreen/currentServices.dart';
+import '../../../services/auth_service.dart';
+import '../../drawerScreen/currency.dart';
 import '../../drawerScreen/helpScreen.dart';
-import '../../homeScreen/homeScreen.dart';
+import '../../onboardingscreens.dart';
 import '../driverHomeScreen/driverHomeScreen.dart';
-import 'availableDeliveries.dart';
 import 'finantial.dart';
 import 'notificationScreen.dart';
 
-
 class DriverCustomSideBar extends StatelessWidget {
   const DriverCustomSideBar({super.key});
-
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -35,7 +34,6 @@ class DriverCustomSideBar extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // ---------------- HEADER ----------------
             Container(
               width: double.infinity,
@@ -43,32 +41,39 @@ class DriverCustomSideBar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColor.primaryColor,
                 borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(30),bottomRight: Radius.circular(30)
+                  topRight: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
                 ),
               ),
               child: Row(
                 children: [
-                  // profile image
                   Container(
                     height: 55,
                     width: 55,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
-                      image: DecorationImage(
-                        image: AssetImage("assets/images/profile.png"),
-                        fit: BoxFit.cover,
-                      ),
                     ),
+                    clipBehavior: Clip.antiAlias,
+                    child: AppSession().profileImage.isNotEmpty
+                        ? ClipOval(
+                          child: Image.network(
+                                                AppSession().profileImage,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) {
+                          return _fallbackProfileIcon();
+                                                },
+                                              ),
+                        )
+                        : _fallbackProfileIcon(),
                   ),
-                  const SizedBox(width: 14),
 
-                  // name & phone
+                  const SizedBox(width: 14),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Adam Justin",
+                       AppSession().firstname+AppSession().lastname,
                         style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 16,
@@ -77,7 +82,7 @@ class DriverCustomSideBar extends StatelessWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        "+91 88855 - 64565",
+                      AppSession().phone,
                         style: GoogleFonts.poppins(
                           color: Colors.white70,
                           fontSize: 13,
@@ -91,62 +96,73 @@ class DriverCustomSideBar extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // ---------------- MENU ITEMS ----------------
+            InkWell(
+              onTap: () {
+                Helper.moveToScreenwithPush(context, DriverHomeScreen());
+              },
+              child: _menuTile("Home", "assets/images/home.svg"),
+            ),
+            InkWell(
+              onTap: () {
+                Helper.moveToScreenwithPush(context, YourTripsScreen());
+              },
+              child: _menuTile("Your Trips", "assets/images/truck.svg"),
+            ),
+            InkWell(
+              onTap: () {
+                Helper.moveToScreenwithPush(context, NotificationScreen());
+              },
+              child:
+              _menuTile("Notification", "assets/images/notification.svg"),
+            ),
+            InkWell(
+              onTap: () {
+                Helper.moveToScreenwithPush(context, ProfileDriverScreen());
+              },
+              child: _menuTile("Profile", "assets/images/profile.svg"),
+            ),
+            InkWell(
+              onTap: () {
+                Helper.moveToScreenwithPush(context, PayoutScreen());
+              },
+              child: _menuTile("Payout", "assets/images/wallet.svg"),
+            ),
             InkWell(
                 onTap: () {
-                  Helper.moveToScreenwithPush(context, DriverHomeScreen());
+                  Helper.moveToScreenwithPush(context, CurrencyScreen(fromScreen: "driver"));
                 },
-                child: _menuTile("Home", "assets/images/home.svg")),
+                child: _menuTile("Currency", "assets/images/wallet.svg")),
             InkWell(
-                onTap: () {
+              onTap: () {
+                Helper.moveToScreenwithPush(
+                    context, FinancialReportScreen());
+              },
+              child: _menuTile(
+                  "Financial Reports", "assets/images/financialReports.svg"),
+            ),
+            InkWell(
+              onTap: () {
+                Helper.moveToScreenwithPush(context, SettingScreen());
+              },
+              child: _menuTile("Setting", "assets/images/settings.svg"),
+            ),
 
-                  Helper.moveToScreenwithPush(context, YourTripsScreen());
-                },
-                child: _menuTile("Your Trips", "assets/images/truck.svg")),
-
             InkWell(
-                onTap: () {
-
-                  Helper.moveToScreenwithPush(context, NotificationScreen());
-                },
-
-                child: _menuTile("Notification", "assets/images/notification.svg")),
-            InkWell(
-                onTap: () {
-                  Helper.moveToScreenwithPush(context, ProfileDriverScreen());
-                },
-                child: _menuTile("Profile", "assets/images/profile.svg")),
-            InkWell(
-                onTap: () {
-                  Helper.moveToScreenwithPush(context, PayoutScreen());
-                },
-                child: _menuTile("Payout", "assets/images/wallet.svg")),
-            InkWell(
-                onTap: () {
-                  Helper.moveToScreenwithPush(context, FinancialReportScreen());
-                },
-                child: _menuTile("Financial Reports", "assets/images/financialReports.svg")),
-            InkWell(
-                onTap: () {
-                  Helper.moveToScreenwithPush(context, SettingScreen());
-                },
-
-                child: _menuTile("Setting", "assets/images/settings.svg")),
-
-
-            InkWell(
-                onTap: () {
-                  Helper.moveToScreenwithPush(context, HelpScreen(fromScreen: "driver",));
-                },
-                child: _menuTile("Help", "assets/images/help.svg")),
+              onTap: () {
+                Helper.moveToScreenwithPush(
+                    context, HelpScreen(fromScreen: "driver"));
+              },
+              child: _menuTile("Help", "assets/images/help.svg"),
+            ),
 
             const Spacer(),
 
-            // ---------------- LOGOUT ----------------
             Padding(
               padding: const EdgeInsets.only(left: 20, bottom: 30),
               child: GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  showConfirmPopuplogout(context: context);
+                },
                 child: Row(
                   children: [
                     SvgPicture.asset(
@@ -173,7 +189,18 @@ class DriverCustomSideBar extends StatelessWidget {
     );
   }
 
-  // ---------------- REUSABLE MENU TILE ----------------
+  Widget _fallbackProfileIcon() {
+    return Container(
+      color: Colors.grey.shade300,
+      child: Icon(
+        Icons.person,
+        color: Colors.grey.shade700,
+        size: 32,
+      ),
+    );
+  }
+
+
   Widget _menuTile(String title, String iconPath) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -194,6 +221,150 @@ class DriverCustomSideBar extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  // ---------------- SAFE LOADER ----------------
+  void _showLoader(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (_) => Center(
+        child: Lottie.asset(
+          'assets/animation/dots_loader.json',
+          repeat: true,
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+
+  void _hideLoader(BuildContext context) {
+    Navigator.of(context, rootNavigator: true).pop();
+  }
+
+  // ---------------- LOGOUT POPUP ----------------
+  void showConfirmPopuplogout({required BuildContext context}) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Logout Confirmation",
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  "Are you sure you want to logout?",
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Text(
+                        "No",
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColor.primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                      ),
+                      onPressed: () async {
+                        // Safe root context
+                        final rootCtx = Navigator.of(context, rootNavigator: true).context;
+
+                        // Close confirmation dialog
+                        Navigator.pop(context);
+
+                        // Critical 50ms delay to let dialog close safely
+                        await Future.delayed(const Duration(milliseconds: 50));
+
+                        // Show loader immediately
+                        _showLoader(rootCtx);
+
+                        try {
+                          final resp = await AuthService.logout();
+                          print("🔵 Logout API Response: $resp");
+
+                          if (resp["result"] == "success") {
+                            await AppSession().logout();
+
+                            _hideLoader(rootCtx);
+
+                            Navigator.of(rootCtx, rootNavigator: true).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+                                  (route) => false,
+                            );
+                          } else {
+                            _hideLoader(rootCtx);
+                            ScaffoldMessenger.of(rootCtx).showSnackBar(
+                              SnackBar(content: Text(resp["message"] ?? "Logout failed")),
+                            );
+                          }
+                        } catch (e) {
+                          _hideLoader(rootCtx);
+                          ScaffoldMessenger.of(rootCtx).showSnackBar(
+                            SnackBar(content: Text("Error: $e")),
+                          );
+                        }
+                      },
+
+                       child: Text(
+                        "Yes",
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: AppColor.secondaryColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

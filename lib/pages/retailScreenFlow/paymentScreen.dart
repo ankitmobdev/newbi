@@ -1,18 +1,35 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_eat_e_commerce_app/Stripe/PaymentServiceBooking.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
+import '../../SharedPreference/AppSession.dart';
+import '../../Stripe/PaymentService.dart';
 import '../../constant.dart';
+import '../../helper_class_snackbar.dart';
+import '../../models/Global.dart';
+import '../../models/OrderData.dart';
+import '../../services/auth_service.dart';
 import '../homeScreen/homeScreen.dart';
 
 class PaymentMethodScreen extends StatefulWidget {
-  const PaymentMethodScreen({super.key});
+  final OrderData? orderData;
+  const PaymentMethodScreen({super.key, this.orderData,});
 
   @override
   State<PaymentMethodScreen> createState() => _PaymentMethodScreenState();
 }
 
 class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
+
   String selectedPayment = "";
+
+  @override
+  void initState() {
+    super.initState();
+    PaymentService().initializeStripe();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +68,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                 _paymentCard(
                   icon: "assets/images/card.svg",
                   title: "Card Payment",
-                  value: "card",
+                  value: "stripe",
                 ),
                 const SizedBox(height: 12),
 
@@ -120,10 +137,9 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 // ---------------- TITLE ----------------
                 Text(
-                  "Successfully",
+                  "Confirm",
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -131,26 +147,32 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-
                 // ---------------- MESSAGE ----------------
                 Text(
-                  "Booking added Successfully",
+                  "Please confirm to proceed this order",
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 24),
-
                 // ---------------- BUTTONS ROW ----------------
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-
-
-
-
-
+                    // ❌ CANCEL BUTTON
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Text(
+                        "Cancel",
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 24),
                     // ✔ OKAY BUTTON
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -163,11 +185,23 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                           vertical: 10,
                         ),
                       ),
-                      onPressed: () {
+                      onPressed: () async {
                         Navigator.pop(context);
 
-                        Helper.moveToScreenwithPush(context, HomeScreen());
+                        if (selectedPayment == "stripe") {
+                          bool success = await PaymentServiceBooking().makePayment(
+                            context,
+                            widget.orderData!.totalCost.toString(),
+                            AppSession().currency == "NGN" ? "ngn" : "gbp",
+                          );
+                          if (success) {
+                            callBookingApi();   // <-- Now correct
+                          }
+                        } else {
+                          callBookingApi();
+                        }
 
+                        //Helper.moveToScreenwithPush(context, HomeScreen());
                         // Add next action here
                       },
                       child: Text(
@@ -270,4 +304,93 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
           : null,
     );
   }
+
+  Future<void> callBookingApi() async {
+    //setState(() => _isLoading = true);
+
+    debugPrint("driver_cost_0: ${widget.orderData!.totalCost!}");
+    debugPrint("driver_cost_1: ${widget.orderData!.driverCost!}");
+    debugPrint("driver_cost_2: ${widget.orderData!.adminCost!}");
+    debugPrint("driver_cost_3: ${widget.orderData!.driverAideCost!}");
+    debugPrint("driver_cost_4: ${selectedPayment}");
+
+    _showLoader();
+    try {
+      final order = widget.orderData!;
+
+      // Convert package list to JSON
+      String packageInfoJson = jsonEncode(Global.packageList.map((e) => e.toJson()).toList());
+      debugPrint("packageInfoJson: $packageInfoJson"); // ← debug print like Kotlin Log.e
+
+      final response = await AuthService.booking(
+        userId: AppSession().userId,
+        vehicleType: order.vehicleType!,
+        fromTime: order.startTime!,
+        toTime: order.endTime!,
+        date: order.date!,
+        bookingTime: order.receiverName!,
+        sellerName: order.storeOrSellerName!,
+        sellerNumber: order.sellerNumber!,
+        unitOrApartment2: order.unit2!,
+        staircase2: order.stairs2status!,
+        elevator2: order.elevators2!,
+        numberOfStairs2: order.stairs2!,
+        storeName: order.storeOrSellerName!,
+        itemPurchaseBy: order.purchasedBy!,
+        purchaserName: order.purchaserName!,
+        purchaserNumber: order.purchaserNumber!,
+        unitOrApartment: order.unit1!,
+        pickupAddress: order.pickupLocation!,
+        pickupLat: order.pickupLatitude!,
+        pickupLong: order.pickupLongitude!,
+        dropoffAddress: order.dropLocation!,
+        dropoffLat: order.dropLatitude!,
+        dropoffLong: order.dropLongitude!,
+        staircase: order.stairs1status!,
+        numberOfStairs: order.stairs1!,
+        elevators: order.elevators!,
+        aideAndDriver: order.driverAide!,
+        bookingType: order.bookingType,
+        packageInfoJson: packageInfoJson,
+        deliveryCost: order.totalCost!,
+        adminCost: order.adminCost!,
+        driverCost: order.driverCost!,
+        driverPlusAideCost: order.driverAideCost!,
+        //stripeAmount: "0",
+        //stripeToken: "0",
+        paymentType: selectedPayment,
+      );
+
+      if (response["result"] == "Success") {
+        AppSnackBar.success(response["message"]);
+        Helper.moveToScreenwithPush(context, HomeScreen());
+      } else {
+        AppSnackBar.error(response["message"]);
+      }
+    } catch (e) {
+      print("❌ Booking error: $e");
+      AppSnackBar.error("Error: $e");
+      //AppSnackBar.success(response["message"]);
+      //Helper.moveToScreenwithPush(context, HomeScreen());
+    } finally {
+      //setState(() => _isLoading = false);
+    }
+  }
+
+  void _showLoader() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (_) => Center(
+        child: Lottie.asset(
+          'assets/animation/dots_loader.json',
+          repeat: true,
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+
 }

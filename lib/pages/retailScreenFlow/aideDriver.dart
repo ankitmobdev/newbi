@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../../constant.dart';
+import '../../models/OrderData.dart';
 import 'dateTimeScreen.dart';
 
 class AideDriverScreen extends StatefulWidget {
-  const AideDriverScreen({super.key});
-
+  final OrderData? orderData;
+  const AideDriverScreen({
+    super.key,
+    this.orderData,
+  });
   @override
   State<AideDriverScreen> createState() => _AideDriverScreenState();
 }
 
 class _AideDriverScreenState extends State<AideDriverScreen> {
-  String selectedAide = "";
-  String selectedVehicle = "";
+  String selectedAide = "driver";
+  String selectedVehicle = "Car";
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +65,7 @@ class _AideDriverScreenState extends State<AideDriverScreen> {
               title: "Driver + Aide",
               desc:
               "If items in your projects requires 2 people to lift safely and you are unable to provide help, please select driver + aide",
-              value: "driver_aide",
+              value: "driverPlusAide",
             ),
 
             const SizedBox(height: 20),
@@ -77,7 +79,7 @@ class _AideDriverScreenState extends State<AideDriverScreen> {
               title: "Car",
               desc:
               "If items in your projects requires 2 people to lift safely and you are unable to provide help, please select driver + aide",
-              value: "car",
+              value: "Car",
             ),
             const SizedBox(height: 14),
 
@@ -86,7 +88,7 @@ class _AideDriverScreenState extends State<AideDriverScreen> {
               title: "Mini Van",
               desc:
               "If items in your projects requires 2 people to lift safely and you are unable to provide help, please select driver + aide",
-              value: "minivan",
+              value: "Mini van",
             ),
             const SizedBox(height: 14),
 
@@ -95,7 +97,7 @@ class _AideDriverScreenState extends State<AideDriverScreen> {
               title: "Cargo Van",
               desc:
               "If items in your projects requires 2 people to lift safely and you are unable to provide help, please select driver + aide",
-              value: "cargo",
+              value: "Cargo van",
             ),
             const SizedBox(height: 14),
 
@@ -104,7 +106,7 @@ class _AideDriverScreenState extends State<AideDriverScreen> {
               title: "Pickup Truck",
               desc:
               "If items in your projects requires 2 people to lift safely and you are unable to provide help, please select driver + aide",
-              value: "pickup",
+              value: "Pickup truck",
             ),
             const SizedBox(height: 14),
 
@@ -113,7 +115,7 @@ class _AideDriverScreenState extends State<AideDriverScreen> {
               title: "Box Truck",
               desc:
               "If items in your projects requires 2 people to lift safely and you are unable to provide help, please select driver + aide",
-              value: "box",
+              value: "Box truck",
             ),
 
             const SizedBox(height: 30),
@@ -130,7 +132,11 @@ class _AideDriverScreenState extends State<AideDriverScreen> {
                   ),
                 ),
                 onPressed: () {
-                  Helper.moveToScreenwithPush(context, DateTimeScreen());
+                  final updatedOrder = widget.orderData!.copyWith(
+                    driverAide: selectedAide,
+                    vehicleType: selectedVehicle,
+                  );
+                  Helper.moveToScreenwithPush(context, DateTimeScreen(orderData: updatedOrder));
                 },
                 child: Text(
                   "Next",
@@ -300,10 +306,8 @@ class _AideDriverScreenState extends State<AideDriverScreen> {
               ],
             ),
           ),
-
           // Radio
           _customRadio(selected)
-
         ],
       ),
     );

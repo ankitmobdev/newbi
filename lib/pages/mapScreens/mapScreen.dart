@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:lottie/lottie.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io' show Platform;
 import '../../constant.dart';   // <-- AppColor (secondaryColor, textColor)
@@ -70,11 +71,12 @@ class LocationWidgetUI extends State<LocationWidget> {
   double? latitude;
   double? longitude;
 
-  bool _isMapReady = false;
+  bool isLoading = true; // ✅ LOADER FLAG
 
   @override
   void initState() {
     super.initState();
+
     if (Platform.isIOS) {
       getCurrentLocation();
     } else {
@@ -85,41 +87,49 @@ class LocationWidgetUI extends State<LocationWidget> {
   void getAndroidLocation(BuildContext context) async {
     try {
       final position = await LocationService().getCurrentLocations(context);
+      if (position == null) return;
 
-      if (position != null) {
-        List<Placemark> placemarks = await placemarkFromCoordinates(
-          position.latitude,
-          position.longitude,
-        );
+      final placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
 
-        setState(() {
-          startLocation = LatLng(position.latitude, position.longitude);
+      setState(() {
+        startLocation = LatLng(position.latitude, position.longitude);
+        latitude = position.latitude;
+        longitude = position.longitude;
 
-          location =
-          "${placemarks.first.street}, ${placemarks.first.subLocality}, ${placemarks.first.locality}, ${placemarks.first.administrativeArea}";
-          _isMapReady = true;
-        });
-      }
+        location =
+        "${placemarks.first.street}, ${placemarks.first.subLocality}, ${placemarks.first.locality}, ${placemarks.first.administrativeArea}";
+
+        isLoading = false; // ✅ STOP LOADER
+      });
     } catch (e) {
-      print("error: $e");
+      debugPrint("Location error: $e");
+      setState(() => isLoading = false);
     }
   }
 
   void getCurrentLocation() async {
     try {
       final position = await Geolocator.getCurrentPosition();
-      List<Placemark> placemarks =
-      await placemarkFromCoordinates(position.latitude, position.longitude);
+      final placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
 
       setState(() {
         startLocation = LatLng(position.latitude, position.longitude);
+        latitude = position.latitude;
+        longitude = position.longitude;
 
         location =
         "${placemarks.first.street}, ${placemarks.first.subLocality}, ${placemarks.first.locality}, ${placemarks.first.administrativeArea}";
-        _isMapReady = true;
+        isLoading = false;
       });
     } catch (e) {
-      print("error: $e");
+      debugPrint("Location error: $e");
+      setState(() => isLoading = false);
     }
   }
 
@@ -128,14 +138,13 @@ class LocationWidgetUI extends State<LocationWidget> {
     return Scaffold(
       backgroundColor: AppColor.secondaryColor,
 
-      // ******************  APP BAR  ******************
       appBar: AppBar(
         backgroundColor: AppColor.secondaryColor,
         elevation: 0,
         centerTitle: true,
-        leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
+          onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           "Select Location",
@@ -147,106 +156,52 @@ class LocationWidgetUI extends State<LocationWidget> {
         ),
       ),
 
-      body: _isMapReady
-          ? Stack(
+      body: Stack(
         children: [
-          GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: startLocation,
-              zoom: 14,
-            ),
-            zoomGesturesEnabled: true,
-            mapType: MapType.normal,
-            onMapCreated: (controller) => mapController = controller,
-            onCameraMove: (CameraPosition position) async {
-              LatLng t = position.target;
-              List<Placemark> p =
-              await placemarkFromCoordinates(t.latitude, t.longitude);
-
-              setState(() {
-                location =
-                "${p.first.street}, ${p.first.subLocality}, ${p.first.locality}, ${p.first.administrativeArea}";
-                latitude = t.latitude;
-                longitude = t.longitude;
-              });
-            },
-          ),
-
-          // ************ SEARCH BAR (CARD) ************
-          Positioned(
-            top: 16,
-            left: 16,
-            right: 16,
-            child: GestureDetector(
-              onTap: () async {
-                var place = await PlacesAutocomplete.show(
-                  context: context,
-                  apiKey: googleApikey,
-                  mode: Mode.overlay,
-                  types: [],
-                );
-
-                if (place != null) {
-                  setState(() => location = place.description!);
-
-                  final plist = GoogleMapsPlaces(
-                    apiKey: googleApikey,
-                    apiHeaders: await GoogleApiHeaders().getHeaders(),
-                  );
-
-                  final detail =
-                  await plist.getDetailsByPlaceId(place.placeId!);
-                  final lat = detail.result.geometry!.location.lat;
-                  final lng = detail.result.geometry!.location.lng;
-
-                  mapController?.animateCamera(
-                    CameraUpdate.newCameraPosition(
-                      CameraPosition(target: LatLng(lat, lng), zoom: 17),
-                    ),
-                  );
-                }
-              },
-              child: Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.black12),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.search, color: Colors.black54),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        location,
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          color: Colors.black87,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
+          // ================= MAP =================
+          if (!isLoading)
+            GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: startLocation,
+                zoom: 14,
               ),
+              mapType: MapType.normal,
+              onMapCreated: (controller) => mapController = controller,
+              onCameraMove: (position) async {
+                final t = position.target;
+                final placemarks =
+                await placemarkFromCoordinates(t.latitude, t.longitude);
+
+                setState(() {
+                  latitude = t.latitude;
+                  longitude = t.longitude;
+                  location =
+                  "${placemarks.first.street}, ${placemarks.first.locality}";
+                });
+              },
             ),
-          ),
 
-          // ************* MAP PIN ICON *************
-           Center(
-            child: Image.asset( "assets/images/mapIcon.png",),
-          ),
+          // ================= MAP PIN =================
+          if (!isLoading)
+            Center(
+              child: Image.asset("assets/images/mapIcon.png"),
+            ),
 
-          // ************* BOTTOM BUTTON *************
-          Positioned(
-            bottom: 24,
-            left: 16,
-            right: 16,
-            child: SizedBox(
-              height: 48,
+          // ================= SEARCH BAR =================
+          if (!isLoading)
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: _searchBar(context),
+            ),
+
+          // ================= SELECT BUTTON =================
+          if (!isLoading)
+            Positioned(
+              bottom: 24,
+              left: 16,
+              right: 16,
               child: ElevatedButton(
                 onPressed: () {
                   if (latitude != null && longitude != null) {
@@ -270,10 +225,71 @@ class LocationWidgetUI extends State<LocationWidget> {
                 ),
               ),
             ),
-          ),
+
+          // ================= LOADER =================
+          if (isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.35),
+              child: Center(
+                child: Lottie.asset(
+                  'assets/animation/dots_loader.json',
+                  width: 120,
+                ),
+              ),
+            ),
         ],
-      )
-          : const Center(child: CircularProgressIndicator()),
+      ),
+    );
+  }
+
+  Widget _searchBar(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        final place = await PlacesAutocomplete.show(
+          context: context,
+          apiKey: googleApikey,
+          mode: Mode.overlay,
+        );
+
+        if (place == null) return;
+
+        setState(() => location = place.description!);
+
+        final places = GoogleMapsPlaces(
+          apiKey: googleApikey,
+          apiHeaders: await GoogleApiHeaders().getHeaders(),
+        );
+
+        final detail = await places.getDetailsByPlaceId(place.placeId!);
+        final lat = detail.result.geometry!.location.lat;
+        final lng = detail.result.geometry!.location.lng;
+
+        mapController?.animateCamera(
+          CameraUpdate.newLatLngZoom(LatLng(lat, lng), 17),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.search, color: Colors.black54),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                location,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(fontSize: 15),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
+

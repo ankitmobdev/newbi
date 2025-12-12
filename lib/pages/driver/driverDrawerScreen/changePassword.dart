@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_eat_e_commerce_app/constant.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'drawerScreenDriver.dart';
+import 'package:lottie/lottie.dart';
+
+import '../../../SharedPreference/AppSession.dart';
+import '../../../services/auth_service.dart';
 
 class ChangePassword extends StatefulWidget {
   const ChangePassword({super.key});
@@ -12,22 +15,93 @@ class ChangePassword extends StatefulWidget {
 }
 
 class _ChangePasswordState extends State<ChangePassword> {
-  final TextEditingController _password = TextEditingController();
+  final TextEditingController _oldPassword = TextEditingController();
+  final TextEditingController _newPassword = TextEditingController();
   final TextEditingController _confirmPassword = TextEditingController();
 
+  // ================= LOADER =================
+  void showLoader() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.4),
+      builder: (_) => Center(
+        child: Lottie.asset(
+          'assets/animation/dots_loader.json',
+          repeat: true,
+        ),
+      ),
+    );
+  }
+
+  void hideLoader() {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
+  }
+
+  // ================= SUBMIT =================
+  Future<void> submitChangePassword() async {
+    if (_oldPassword.text.isEmpty ||
+        _newPassword.text.isEmpty ||
+        _confirmPassword.text.isEmpty) {
+      _showMessage("All fields are required");
+      return;
+    }
+
+    if (_newPassword.text != _confirmPassword.text) {
+      _showMessage("New password and confirm password do not match");
+      return;
+    }
+
+    showLoader();
+
+    try {
+      final userId = AppSession().userId;
+
+      final response = await AuthService.changePassword(
+        userid: userId,
+        old_password: _oldPassword.text.trim(),
+        new_password: _newPassword.text.trim(),
+      );
+
+      hideLoader();
+
+      if (response['result'] == "success") {
+        _showMessage(response['message'] ?? "Password changed successfully");
+        Navigator.pop(context);
+      } else {
+        _showMessage(response['message'] ?? "Failed to change password");
+      }
+    } catch (e) {
+      hideLoader();
+      _showMessage("Something went wrong. Try again");
+      debugPrint("❌ Change Password Error: $e");
+    }
+  }
+
+  void _showMessage(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: Colors.black87,
+      ),
+    );
+  }
+
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.secondaryColor,
-
-      // ---------------- APP BAR ----------------
       appBar: AppBar(
         backgroundColor: AppColor.secondaryColor,
         elevation: 1,
         centerTitle: true,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.arrow_back_ios, size: 18, color: Colors.black),
+          child:
+          const Icon(Icons.arrow_back_ios, size: 18, color: Colors.black),
         ),
         title: Text(
           "Change Password",
@@ -38,8 +112,6 @@ class _ChangePasswordState extends State<ChangePassword> {
           ),
         ),
       ),
-
-      // ---------------- BODY WITH FULL SCREEN BG ----------------
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -53,48 +125,43 @@ class _ChangePasswordState extends State<ChangePassword> {
             ),
           ),
         ),
-
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
-          child: Container(
-            height: MediaQuery.of(context).size.height/1.2,
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height / 1.2,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // --------------- Password ----------------
                 Column(
                   children: [
-                    // PASSWORD
                     buildField(
                       hint: "Enter Old Password",
                       icon: "assets/images/lock.svg",
-                      controller: _password,
+                      controller: _oldPassword,
                       obscure: true,
                     ),
                     const SizedBox(height: 14),
-
                     buildField(
                       hint: "Enter New Password",
                       icon: "assets/images/lock.svg",
-                      controller: _password,
+                      controller: _newPassword,
                       obscure: true,
                     ),
                     const SizedBox(height: 14),
-
-                    // CONFIRM PASSWORD
                     buildField(
                       hint: "Enter Confirm Password",
                       icon: "assets/images/lock.svg",
                       controller: _confirmPassword,
                       obscure: true,
                     ),
-
                   ],
                 ),
-
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10.0),
-                  child: _buildButton("Submit"),
+                GestureDetector(
+                  onTap: submitChangePassword,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _buildButton("Submit"),
+                  ),
                 )
               ],
             ),
@@ -104,7 +171,7 @@ class _ChangePasswordState extends State<ChangePassword> {
     );
   }
 
-  // TEXT FIELD BUILDER
+  // ================= INPUT FIELD =================
   Widget buildField({
     required String hint,
     required String icon,
@@ -128,12 +195,16 @@ class _ChangePasswordState extends State<ChangePassword> {
             child: TextFormField(
               controller: controller,
               obscureText: obscure,
-              style: GoogleFonts.poppins(color: AppColor.textclr, fontSize: 15),
+              style: GoogleFonts.poppins(
+                color: AppColor.textclr,
+                fontSize: 15,
+              ),
               decoration: InputDecoration(
                 hintText: hint,
                 border: InputBorder.none,
-                hintStyle:
-                GoogleFonts.poppins(color: AppColor.textclr.withOpacity(0.7)),
+                hintStyle: GoogleFonts.poppins(
+                  color: AppColor.textclr.withOpacity(0.7),
+                ),
               ),
             ),
           )
@@ -142,75 +213,27 @@ class _ChangePasswordState extends State<ChangePassword> {
     );
   }
 
-  // ---------------- CUSTOM SWITCH ----------------
-  Widget customSwitch({
-    required bool value,
-    required VoidCallback onChanged,
-  }) {
-    return GestureDetector(
-      onTap: onChanged,
-      child: AnimatedContainer(
-        duration:  Duration(milliseconds: 200),
-        height: 22,
-        width: 42,
-        padding:  EdgeInsets.symmetric(horizontal: 2),
-        decoration: BoxDecoration(
-          color: value ? Colors.green : Colors.grey.shade400,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Align(
-          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-          child: Container(
-            height: 17,
-            width: 17,
-            decoration:  BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColor.secondaryColor,
-            ),
-          ),
+  // ================= BUTTON =================
+  Widget _buildButton(String text) {
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        color: AppColor.primaryColor,
+        borderRadius: BorderRadius.circular(12),
+        border: const Border(
+          top: BorderSide(color: Colors.white, width: 1),
+          left: BorderSide(color: Colors.white, width: 1),
+          right: BorderSide(color: Colors.white, width: 1),
+          bottom: BorderSide(color: Colors.white, width: 6),
         ),
       ),
-    );
-  }
-
-  // Reusable Button
-  Widget _buildButton(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: Container(
-        height: 48,
-        decoration: BoxDecoration(
-          color: AppColor.primaryColor, // dark background
-          borderRadius: BorderRadius.circular(12),
-
-          // Only bottom border
-          border: Border(
-            top: const BorderSide(
-              color: Colors.white,
-              width: 1,
-            ),
-            left: const BorderSide(
-              color: Colors.white,
-              width: 1,
-            ),
-            right: const BorderSide(
-              color: Colors.white,
-              width: 1,
-            ),
-            bottom: const BorderSide(
-              color: Colors.white,
-              width: 6,  // thicker bottom border
-            ),
-          ),
-        ),
-        child: Center(
-          child: Text(
-            text,
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: AppColor.secondaryColor,
-            ),
+      child: Center(
+        child: Text(
+          text,
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: AppColor.secondaryColor,
           ),
         ),
       ),

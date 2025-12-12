@@ -1,70 +1,92 @@
-import 'package:flutter/material.dart';
-
 class BaseURl {
-  static const String baseUrl = "https://www.apptechmobile.com/apptech/GoEat/ApiController/";
+  static const String baseUrl = "https://portexglobal.com/portex/index.php/ApiController/";
 }
 
 class ApiAction {
+  // ---------- AUTH ----------
+  static const String Driver_Registration = "Driver_Registration";
+  static const String edit_profile_driver = "edit_profile_driver";
+  static const String Edit_Profile_User = "Edit_Profile_User";
+  static const String User_Registration = "User_Registration";
+  static const String profile = "profile";
   static const String login = "login";
-  //static const String registration = "providerRegister";
   static const String forgetPassword = "forgetPassword";
+  static const String getsettings = "getsettings";
+  static const String booking = "Booking";
   static const String logout = "logout";
-  static const String profile = "get_driver_profile";
-  //static const String login = "login";
-  static const String registration = "Registration";
-  //static const String profile = "profile";
   static const String edit_profile = "Edit_Profile_Driver";
+  static const String payout_total_earning = "payout_total_earning";
+  static const String payment_received = "payment_received";
+  static const String incoming_profit = "incoming_profit";
+  static const String changePassword = "changePassword";
+  static const String needHelp = "needHelp";
   static const String menuCategory = "category";
-  static const String menuCategoryItem = "category_menu_item_list";
-  static const String addItemAccordingCategory = "add_category_according_item";
-  static const String ingredientsItem = "ingredients";
-  static const String menuItemList = "category_menu_item_list";
-  static const String addInstamartItem = "add_products";
-  static const String instamartItemList = "instamart_product_list";
-  static const String instamartCategory = "instamart_category";
-  static const String instamartSubcategory = "instamart_category_according_subcategory";
-  static const String updateInstamartProduct = "update_instamart_products";
-  static const String deleteInstamartProduct = "delete_instamart_product";
-  static const String updateRestaurantProducts = "Update_restaurent_item";
-  static const String deleteRestaurantProduct = "delete_restaurent_item";
-  static const String restaurantOrders = "vendor_booking_list";
-  static const String bookingDetail = "bookingDetail";
-  static const String acceptOrder = "acceptOrder";
-  static const String rejectOrder = "rejectOrder";
-  static const String restaurentOffer = "restaurent_offer";
-  static const String socialLoginURL = "social_login";
-  static const String social_registration = "social_registration";
-  static const String getnearbydelivery = "getnearbydelivery";
-  static const String acceptbooking = "acceptbooking";
-  static const String outForService = "outforservice";
-  static const String arrivedlocation = "arrivedlocation";
-  static const String startTrip = "startTrip";
-  static const String cancelBooking = 'cancelBooking';
-  static const String booking_detail = 'booking_detail';
-  static const String driver_current_delivery = 'driver_current_delivery';
-  static const String driver_history_delivery = 'driver_history_delivery';
-  static const String payout = 'payout';
-  static const String add_provider_service = 'add_provider_service';
-  static const String get_provider_serive = 'get_provider_serive';
-  static const String editProfile = 'update_driver_profile';
-  static const String deliveryDetails = 'deliveryDetails';
-  static const String incoming_profit = 'incoming_profit';
-  static const String reviewlist = 'reviewlist';
-  static const String delete_image = 'delete_image';
-  static const String admin_percentage = 'admin_percentage';
-  static const String getNearByDeliveries = 'getNearByDeliveries';
-  static const String driveracceptOrder = 'driveracceptOrder';
-  static const String driverrejectOrder = 'driverrejectOrder';
-  static const String driver_booking_list = 'driver_booking_list';
-  static const String driverpickOrder = 'driverpickOrder';
-  static const String drivercompletetOrder = 'drivercompletetOrder';
-  static const String combinebookingDetail = 'combinebookingDetail';
-  static const String filter_driver_booking_list = 'filter_driver_booking_list';
-  static const String driver_incoming_profit = 'driver_incoming_profit';
-  static const String Payout = 'Payout';
-  static const String all_reviews = 'all_reviews';
-  static const String Driver_dashborad = 'Driver_dashborad';
+  static const String menuSubcategory = "subcategory";
+  static const String notifications = "notifications";
+  static const googleMapKey = 'AIzaSyAOh01_w1CVjtvSNClDYyYe3aO-JCnNgoQ';
+  static const String add_money_to_wallet = "add_money_to_wallet";
+  static const String transaction_history = "transaction_history";
+  static const String paymentintent = "paymentintent";
+  static const stripeKey = 'pk_live_51SZLQn6KBcsATMiQAISaqlRF1QNdXZDrxCpYRFal793Y1RvHoNSi57WdOhskvx6BsRZRl3Bd0BaXYmYgnCOlYq2E001RhcJLCx';
+
+  // ---------- CATEGORY / SERVICES ----------
+  static const String getNearByDeliveries = "getNearByDeliveries";
+  static const String reportProblem = "reportProblem";
+  static const String deliveryDetail = "deliveryDetail";
+  static const String get_driver_deliveries = "get_driver_deliveries";
+  static const String get_user_deliveries = "get_user_deliveries";
+  static const String acceptDeliveryRequest = "acceptDeliveryRequest";
+  static const String decline_order_driver = "decline_order_driver";
+  static const String preference = "preference";
+  static const String pickupdelivery = "pickupdelivery";
+  static const String deliverOrder = "deliverOrder";
+  static const String cancelDelivery = "cancelDelivery";
+  static const String add_provider_service = "add_provider_service";
+  static const String getProviderService = "get_provider_service";
+  static const String deleteProviderService = "delete_provider_service";
+
+  // ---------- ORDERS ----------
+  static const String new_orders = "new_orders";
+  static const String driver_onGoing_orders = "driver_onGoing_orders";
+  static const String driver_orders = "driver_orders";
+  static const String accept_order = "accept_order";
+  static const String reject_order = "reject_order";
+  static const String completeOrders = "completeOrders";
+  static const String acceptParcelOrder = "accept_parcelOrder";
+  static const String rejectParcelOrder = "reject_parcelOrder";
+  static const String parcelOrders = "parcelOrders";
+  static const String driver_orders_orderDetail = "driver_orders_orderDetail";
+  static const String update_order_time = "update_order_time";
+  static const String add_more_time = "add_more_time";
+
+  // ---------- LOCATION / TRACKING ----------
+  static const String update_lat_lon = "update_lat_lon";
+  static const String latlon = "latlon";
+
+  // ---------- WALLET / PAYOUT ----------
+  static const String payout = "payout";
+  static const String withdraw_request_list = "withdraw_request_list";
+  static const String getWalletData = "get_wallet_data";
+  static const String driver_total_earn = "driver_total_earn";
+  static const String provider_revenue = "provider_revenue";
+  static const String driver_total_income = "driver_total_income";
+
+  // ---------- DELIVERIES ----------
+  static const String driverpickupLocations = "driverpickupLocations";
+  static const String getappointments = "getappointments";
+  static const String getordersbydriver = "getordersbydriver";
+
+  // ---------- NOTIFICATION ----------
+  static const String notification_list = "notification_list";
+
+  // ---------- BANNER ----------
+  static const String getBannerData = "get_banner";
+
+  // ---------- TIME HISTORY ----------
+  static const String provider_time_history = "provider_time_history";
+  static const String vendor_time_history = "vendor_time_history";
 }
+
 
 //add_provider_service
 class GetDriverDeliveriesType {
@@ -73,7 +95,8 @@ class GetDriverDeliveriesType {
 }
 
 class ApiCode {
-  static const String kcode = "Goeat12345";
+    static const String kcode = "portax@12345";
+   // static const String kcode = "Homestask";
 }
 
 class ApiConstantsKey {
@@ -112,8 +135,6 @@ class ApiConstantsKey {
   static const String kdescription= "description";
   static const String kprovider_id= "provider_id";
   static const String ktitle= "service_title";
- 
-  //static const String kuserType = "userType";
 
   static const String kvehiclePlateNumber = "vehicle_plate_number";
   static const String kimage = "image";

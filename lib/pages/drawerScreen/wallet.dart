@@ -1,39 +1,123 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
+import '../../SharedPreference/AppSession.dart';
+import '../../Stripe/PaymentService.dart';
 import '../../constant.dart';
+import '../../services/auth_service.dart';
 import 'drawerScreen.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
-
   @override
   State<WalletScreen> createState() => _WalletScreenState();
 }
 
 class _WalletScreenState extends State<WalletScreen> {
   final TextEditingController amountController = TextEditingController();
+  double walletBalance = 0.0;
+  List transactions = [];
+  bool loading = false;
 
-  // Sample Transaction List — will be replaced with API later
-  List<Map<String, dynamic>> transactions = [
-    {
-      "amount": 710.20,
-      "date": "20 January, 2024 | 12:45 PM",
-      "type": "credit"
-    },
-    {"amount": 710.20, "date": "20 January, 2024 | 12:45 PM", "type": "debit"},
-    {"amount": 710.20, "date": "20 January, 2024 | 12:45 PM", "type": "credit"},
-    {"amount": 710.20, "date": "20 January, 2024 | 12:45 PM", "type": "credit"},
-    {"amount": 710.20, "date": "20 January, 2024 | 12:45 PM", "type": "debit"},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    PaymentService().initializeStripe();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getTransactionHistory();
+    });
+  }
+
+  ///------------------- FETCH TRANSACTION HISTORY API -------------------///
+  Future<void> getTransactionHistory() async {
+    //setState(() => loading = true);
+    try {
+      _showLoader();
+      final res = await AuthService.getTransactionHistory(
+        user_id: AppSession().userId,
+      );
+      Navigator.of(context, rootNavigator: true).pop();
+      if (res["result"] == "success") {
+        setState(() {
+          walletBalance = double.parse(res["wallet_amount"].toString());
+          transactions = List<Map<String, dynamic>>.from(res["data"]);
+        });
+      } else {
+        showSnack(res["message"] ?? "Failed to load");
+      }
+    } catch (e) {
+      showSnack("Error loading transaction history: $e");
+    } finally {
+      setState(() => loading = false);
+    }
+  }
+
+  ///------------------- ADD MONEY API -------------------///
+  /*Future<void> addMoneyToWallet() async {
+    if (amountController.text.isEmpty) {
+      return showSnack("Enter amount");
+    }
+    try {
+      // showDialog(
+      //   context: context,
+      //   barrierDismissible: false,
+      //   builder: (_) => const Center(child: CircularProgressIndicator()),
+      // );
+
+      final res = await AuthService.addMoneyToWallet(
+        user_id: AppSession().userId,
+        amount: amountController.text.trim(),
+      );
+
+      //Navigator.pop(context); // Close loader
+
+      if (res["result"] == "success") {
+        showSnack("Money Added Successfully");
+        amountController.clear();
+        getTransactionHistory();
+      } else {
+        showSnack(res["message"] ?? "Failed to add money");
+      }
+    } catch (e) {
+      //Navigator.pop(context);
+      showSnack("Error: $e");
+    }
+  }*/
+
+  void _showLoader() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (_) => Center(
+        child: Lottie.asset(
+          'assets/animation/dots_loader.json',
+          repeat: true,
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+
+  ///------------ COMMON SNACKBAR -------------///
+  void showSnack(message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
+  }
+
+  /// =====================================================================
+  ///                              UI DESIGN SAME
+  /// =====================================================================
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: const CustomSideBar(),
       backgroundColor: Colors.white,
-
-      // ---------------- APPBAR ----------------
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
@@ -53,29 +137,26 @@ class _WalletScreenState extends State<WalletScreen> {
           ),
         ),
       ),
-
-      body: SingleChildScrollView(
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 18),
 
-            // -------- USER + BALANCE --------
+            ///---------------- USER NAME + BALANCE --------------
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Text(AppSession().firstname,
+                    style: GoogleFonts.poppins(
+                        fontSize: 17, fontWeight: FontWeight.w600)),
                 Text(
-                  "Adam Justin",
-                  style: GoogleFonts.poppins(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-                Text(
-                  "\$450",
-                  style: GoogleFonts.poppins(
+                  (AppSession().currency == "NGN" ? "₦" : "£") +
+                      walletBalance.toStringAsFixed(2),
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: AppColor.secondprimaryColor,
@@ -83,27 +164,15 @@ class _WalletScreenState extends State<WalletScreen> {
                 ),
               ],
             ),
-
-            Text(
-              "Your Available Balance",
-              style: GoogleFonts.poppins(
-                color: Colors.black54,
-                fontSize: 13,
-              ),
-            ),
-
+            Text("Your Available Balance",
+                style:
+                GoogleFonts.poppins(color: Colors.black54, fontSize: 13)),
             const SizedBox(height: 25),
 
-            // --------------- ENTER AMOUNT ---------------
-            Text(
-              "Amount",
-              style: GoogleFonts.poppins(
-                color: Colors.black87,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-
+            // ===== AMOUNT INPUT =====
+            Text("Amount",
+                style: GoogleFonts.poppins(
+                    fontSize: 14, fontWeight: FontWeight.w500)),
             const SizedBox(height: 6),
 
             Container(
@@ -115,32 +184,33 @@ class _WalletScreenState extends State<WalletScreen> {
               child: TextField(
                 controller: amountController,
                 keyboardType: TextInputType.number,
-                style: GoogleFonts.poppins(fontSize: 15),
                 decoration: InputDecoration(
                   hintText: "Enter Amount",
-                  hintStyle: GoogleFonts.poppins(
-                    color: Colors.black45,
-                    fontSize: 14,
-                  ),
-                  enabledBorder: OutlineInputBorder(
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColor.borderColor),
                     borderRadius: BorderRadius.circular(12),
-                    borderSide:  BorderSide(color: AppColor.borderColor),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: AppColor.borderColor),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
 
-            // ---------------- ADD MONEY BUTTON ----------------
+            // ================= ADD MONEY BUTTON =================
             GestureDetector(
-              onTap: () {
-                print("Add Money: ${amountController.text}");
+              onTap: () async {
+                if (amountController.text.isEmpty) {
+                  return showSnack("Enter amount");
+                }
+                await PaymentService().makePayment(
+                  context,
+                  amountController.text.trim(),
+                  AppSession().currency == "NGN" ? "ngn" : "gbp",
+                );
               },
               child: Container(
                 height: 48,
@@ -149,41 +219,30 @@ class _WalletScreenState extends State<WalletScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
-                  child: Text(
-                    "Add Money",
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  child: Text("Add Money",
+                      style: GoogleFonts.poppins(
+                          fontSize: 15, color: Colors.white)),
                 ),
               ),
             ),
-
             const SizedBox(height: 28),
 
-            // ---------------- TITLE ----------------
+            //----------------- TITLE ----------------
             Center(
-              child: Text(
-                "Transaction History",
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: Text("Transaction History",
+                  style: GoogleFonts.poppins(
+                      fontSize: 16, fontWeight: FontWeight.w600)),
             ),
-
             const SizedBox(height: 16),
 
-            // ============= LISTVIEW.BUILDER =============
+            ///================ LIST VIEW ==================
             ListView.builder(
               itemCount: transactions.length,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                final tx = transactions[index];
-                bool isCredit = tx["type"] == "credit";
+              itemBuilder: (context, i) {
+                var tx = transactions[i];
+                bool isCredit = tx["status"] == "credit"; // fixed
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 14),
@@ -196,35 +255,27 @@ class _WalletScreenState extends State<WalletScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // AMOUNT + DATE
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "\$${tx["amount"]}",
-                            style: GoogleFonts.poppins(
+                            (AppSession().currency == "NGN" ? "₦" : "£") + (tx["amount"]?.toString() ?? "0"),
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color:
-                                   AppColor.secondprimaryColor
-
+                              color: AppColor.secondprimaryColor,
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            tx["date"],
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              color: Colors.black54,
-                            ),
-                          ),
+                          Text(tx["created_at"] ?? "",
+                              style: GoogleFonts.poppins(
+                                  fontSize: 13, color: Colors.black54)),
                         ],
                       ),
-
-                      // ARROW ICON (UP/DOWN)
-
                       SvgPicture.asset(
-                        isCredit ?"assets/images/arrow_right_up_line (1).svg":"assets/images/arrow_right_up_line.svg",
+                        isCredit
+                            ? "assets/images/arrow_right_up_line (1).svg"
+                            : "assets/images/arrow_right_up_line.svg",
                         height: 26,
                         width: 26,
                       ),
@@ -233,11 +284,10 @@ class _WalletScreenState extends State<WalletScreen> {
                 );
               },
             ),
-
-            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
+
 }

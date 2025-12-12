@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:go_eat_e_commerce_app/pages/registrationScreen/loginUser.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constant.dart';

@@ -4,9 +4,15 @@ import 'package:go_eat_e_commerce_app/pages/drawerScreen/profile.dart';
 import 'package:go_eat_e_commerce_app/pages/drawerScreen/termsAndCondition.dart';
 import 'package:go_eat_e_commerce_app/pages/drawerScreen/wallet.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
+import '../../SharedPreference/AppSession.dart';
 import '../../constant.dart';
+import '../../services/auth_service.dart';
 import '../homeScreen/homeScreen.dart';
+import '../onboardingscreens.dart';
+import 'currency.dart';
 import 'currentServices.dart';
+import 'faq.dart';
 import 'helpScreen.dart';
 import 'historyScreen.dart';
 
@@ -22,7 +28,6 @@ class CustomSideBar extends StatelessWidget {
       child: Drawer(
         backgroundColor: AppColor.secondaryColor,
         width: MediaQuery.of(context).size.width * 0.78,
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -34,32 +39,39 @@ class CustomSideBar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColor.primaryColor,
                 borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(30),bottomRight: Radius.circular(30)
+                  topRight: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
                 ),
               ),
               child: Row(
                 children: [
-                  // profile image
                   Container(
                     height: 55,
                     width: 55,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
-                      image: DecorationImage(
-                        image: AssetImage("assets/images/profile.png"),
-                        fit: BoxFit.cover,
-                      ),
                     ),
+                    clipBehavior: Clip.antiAlias,
+                    child: AppSession().profileImage.isNotEmpty
+                        ? ClipOval(
+                      child: Image.network(
+                        AppSession().profileImage,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _fallbackProfileIcon();
+                        },
+                      ),
+                    )
+                        : _fallbackProfileIcon(),
                   ),
-                  const SizedBox(width: 14),
 
-                  // name & phone
+                  const SizedBox(width: 14),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Adam Justin",
+                        AppSession().firstname+AppSession().lastname,
                         style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 16,
@@ -68,7 +80,7 @@ class CustomSideBar extends StatelessWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        "+91 88855 - 64565",
+                        AppSession().phone,
                         style: GoogleFonts.poppins(
                           color: Colors.white70,
                           fontSize: 13,
@@ -110,15 +122,22 @@ class CustomSideBar extends StatelessWidget {
                 child: _menuTile("Wallet", "assets/images/wallet.svg")),
             InkWell(
                 onTap: () {
+                  Helper.moveToScreenwithPush(context, CurrencyScreen(fromScreen: "user"));
+                },
+                child: _menuTile("Currency", "assets/images/wallet.svg")),
+            InkWell(
+                onTap: () {
                   Helper.moveToScreenwithPush(context, TermOfServiceScreen());
                 },
-
-                child: _menuTile("Faq", "assets/images/faq.svg")),
-            _menuTile("About", "assets/images/about.svg"),
-
+                child: _menuTile("About", "assets/images/faq.svg")),
+            InkWell(
+                onTap: () {
+                  Helper.moveToScreenwithPush(context, FaqScreen());
+                },
+                child: _menuTile("Faq", "assets/images/about.svg")),
             InkWell(
               onTap: () {
-                Helper.moveToScreenwithPush(context, HelpScreen());
+                Helper.moveToScreenwithPush(context, HelpScreen(fromScreen: "user"));
               },
                 child: _menuTile("Help", "assets/images/help.svg")),
 
@@ -128,7 +147,9 @@ class CustomSideBar extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 20, bottom: 30),
               child: GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  showConfirmPopuplogout(context: context);
+                },
                 child: Row(
                   children: [
                     SvgPicture.asset(
@@ -151,6 +172,17 @@ class CustomSideBar extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _fallbackProfileIcon() {
+    return Container(
+      color: Colors.grey.shade300,
+      child: Icon(
+        Icons.person,
+        color: Colors.grey.shade700,
+        size: 32,
       ),
     );
   }
@@ -178,4 +210,149 @@ class CustomSideBar extends StatelessWidget {
       ),
     );
   }
+
+  // ---------------- SAFE LOADER ----------------
+  void _showLoader(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (_) => Center(
+        child: Lottie.asset(
+          'assets/animation/dots_loader.json',
+          repeat: true,
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+
+  void _hideLoader(BuildContext context) {
+    Navigator.of(context, rootNavigator: true).pop();
+  }
+
+// ---------------- LOGOUT POPUP ----------------
+  void showConfirmPopuplogout({required BuildContext context}) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Logout Confirmation",
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  "Are you sure you want to logout?",
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Text(
+                        "No",
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColor.primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                      ),
+                      onPressed: () async {
+                        // Safe root context
+                        final rootCtx = Navigator.of(context, rootNavigator: true).context;
+
+                        // Close confirmation dialog
+                        Navigator.pop(context);
+
+                        // Critical 50ms delay to let dialog close safely
+                        await Future.delayed(const Duration(milliseconds: 50));
+
+                        // Show loader immediately
+                        _showLoader(rootCtx);
+
+                        try {
+                          final resp = await AuthService.logout();
+                          print("🔵 Logout API Response: $resp");
+
+                          if (resp["result"] == "success") {
+                            await AppSession().logout();
+
+                            _hideLoader(rootCtx);
+
+                            Navigator.of(rootCtx, rootNavigator: true).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+                                  (route) => false,
+                            );
+                          } else {
+                            _hideLoader(rootCtx);
+                            ScaffoldMessenger.of(rootCtx).showSnackBar(
+                              SnackBar(content: Text(resp["message"] ?? "Logout failed")),
+                            );
+                          }
+                        } catch (e) {
+                          _hideLoader(rootCtx);
+                          ScaffoldMessenger.of(rootCtx).showSnackBar(
+                            SnackBar(content: Text("Error: $e")),
+                          );
+                        }
+                      },
+
+                      child: Text(
+                        "Yes",
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: AppColor.secondaryColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
 }

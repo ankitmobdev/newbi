@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'main.dart';
+
 
 class AppColor {
   // static  Color primeryColor = Color(0xFFFFC107);
@@ -108,6 +110,36 @@ class Helper {
       Fluttertoast.showToast(msg: StaticMessages.CHECK_INTERNET);
       return false;
     }
+  }
+
+
+  static void error1(BuildContext context, String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  /// ❌ Error snackbar (red)
+  static void error(String message) {
+    show(message, backgroundColor: Colors.black87);
+  }
+
+  static void show(String message, {Color? backgroundColor}) {
+    MyApp.messengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: backgroundColor ?? Colors.black87,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   /*================ next Focus ================*/

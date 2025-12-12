@@ -1,36 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../../constant.dart';
+import '../../models/OrderData.dart';
 import 'addItem2.dart';
 
 class AddItemsScreen extends StatefulWidget {
-  const AddItemsScreen({super.key});
-
+  final OrderData? orderData;
+  const AddItemsScreen({super.key, this.orderData});
   @override
   State<AddItemsScreen> createState() => _AddItemsScreenState();
 }
 
 class _AddItemsScreenState extends State<AddItemsScreen> {
-  final List<String> items = [
-    "Chair (Small Item)",
-    "Chair (Medium Item)",
-    "Chair (Large Item)",
-    "Chair (X-Large Item)",
-  ];
-
   final TextEditingController searchController = TextEditingController();
-  String query = "";
+
+  @override
+  void initState() {
+    super.initState();
+
+    //debugPrint("=====order=${widget.orderData}");
+    debugPrint("=====pick_1=${widget.orderData!.pickupLatitude}");
+    debugPrint("=====pick_2=${widget.orderData!.pickupLongitude}");
+    debugPrint("=====pick_3=${widget.orderData!.dropLatitude}");
+    debugPrint("=====pick_4=${widget.orderData!.dropLongitude}");
+
+  }
 
   @override
   Widget build(BuildContext context) {
+    String searchText = searchController.text.trim();
+
+    // ---------- Generate result items exactly like Kotlin code ----------
+    List<String> filteredItems = [];
+    if (searchText.isNotEmpty) {
+      filteredItems = [
+        "$searchText (Small Item)",
+        "$searchText (Medium Item)",
+        "$searchText (Large Item)",
+        "$searchText (X-Large Item)",
+      ];
+    }
+
     return Scaffold(
       backgroundColor: AppColor.secondaryColor,
-
-      // ----------------- APPBAR -----------------
       appBar: AppBar(
-        backgroundColor:AppColor.secondaryColor,
+        backgroundColor: AppColor.secondaryColor,
         elevation: 0,
         centerTitle: true,
         leading: GestureDetector(
@@ -46,8 +61,6 @@ class _AddItemsScreenState extends State<AddItemsScreen> {
           ),
         ),
       ),
-
-      // ---------------------- BODY ----------------------
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
@@ -73,12 +86,13 @@ class _AddItemsScreenState extends State<AddItemsScreen> {
                         hintText: "Search Items",
                         hintStyle: GoogleFonts.poppins(
                           color: AppColor.textclr,
-                          fontSize: 16,fontWeight: FontWeight.w400,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
                         ),
                         border: InputBorder.none,
                       ),
                       onChanged: (value) {
-                        setState(() => query = value.toLowerCase());
+                        setState(() {}); // refresh UI
                       },
                     ),
                   ),
@@ -91,17 +105,14 @@ class _AddItemsScreenState extends State<AddItemsScreen> {
             // ---------------------- LIST ITEMS ----------------------
             Expanded(
               child: ListView.builder(
-                itemCount: items.length,
+                itemCount: filteredItems.length,
                 itemBuilder: (_, index) {
-                  final item = items[index];
-                  if (!item.toLowerCase().contains(query)) return SizedBox();
-
+                  final item = filteredItems[index];
                   return Column(
                     children: [
                       GestureDetector(
                         onTap: () {
-                          Helper.moveToScreenwithPush(context, AddItemsDetailScreen());
-
+                          Helper.moveToScreenwithPush(context, AddItemsDetailScreen(itemName: item, orderData: widget.orderData),);
                         },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
